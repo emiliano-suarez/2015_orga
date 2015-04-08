@@ -79,12 +79,10 @@ void evaluarArgumentos(int argc, char *argv[])
                     {
                             case ayuda:
                             imprimirAyuda();
-                            exit(1);
                             break;
 
                             case version:
                             imprimirVersion();
-                            exit(1);
                             break;
 
                             case caracteres:
@@ -248,7 +246,7 @@ void validacionEntero(int numero)
 
 void imprimir(FILE* fp, unsigned pos)
 {
-        printf("\n ****las ultimas lineas escritas**** \n");
+        printf("\n ****las ultimas lineas/caracteres escritos**** \n");
         fseek(fp,pos,0);
         char caracter;
 
