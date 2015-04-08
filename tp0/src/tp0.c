@@ -9,6 +9,8 @@
 typedef int bool;
 #define true 1
 #define false 0
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
 
 
 /*****   $tp0 -c 10 -n 2 <prueba.txt   ***/
@@ -68,7 +70,7 @@ void evaluarArgumentos(int argc, char *argv[])
     {
         char* error_doble_funcionalidad = "\n error en los parametros, usar -n o -c pero no ambos \n";
         fputs(error_doble_funcionalidad,stderr);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
 
@@ -79,10 +81,12 @@ void evaluarArgumentos(int argc, char *argv[])
                     {
                             case ayuda:
                             imprimirAyuda();
+                            exit(EXIT_SUCCESS);
                             break;
 
                             case version:
                             imprimirVersion();
+                            exit(EXIT_SUCCESS);
                             break;
 
                             case caracteres:
@@ -100,7 +104,7 @@ void evaluarArgumentos(int argc, char *argv[])
                             default:
                             fputs("\n error la opcion del menu no es correcta: ayuda\n",stderr);
                             imprimirAyuda();    //imprimir ayuda en caso de parametros incorrectos
-                            exit(1);
+                            exit(EXIT_FAILURE);
                             break;
                     }
         }
@@ -135,7 +139,7 @@ void tail(int cantLineaschar,char* archivos[],int cantArchivos,bool caso)
                     if ((fp = fopen(archivos[i],"r")) == NULL)
                     {
                             fputs("\n error el archivo no existe\n",stderr);
-                            exit(1);
+                            exit(EXIT_FAILURE);
                     }
 
                     fputs("\n Archivo ",stdout);
@@ -160,14 +164,14 @@ void tail(int cantLineaschar,char* archivos[],int cantArchivos,bool caso)
                             if (fseek(fp,--posFinal,0) != 0)
                             {
                                     fputs("\n error al acceder al archivo \n",stderr);
-                                    exit(1);
+                                    exit(EXIT_FAILURE);
                             }
                     }
 
                     if(cantLineasLeidas != cantLineaschar)
                     {
                             fputs(error_parametro,stderr);
-                            exit(1);
+                            exit(EXIT_FAILURE);
                     }
                     else
                     {
@@ -191,7 +195,7 @@ void tail(int cantLineaschar,char* archivos[],int cantArchivos,bool caso)
                     if(cantCaracteresLeidos != cantLineaschar)
                     {
                             fputs(error_parametro,stderr);
-                            exit(1);
+                            exit(EXIT_FAILURE);
                     }
                     else
                     {
@@ -202,7 +206,7 @@ void tail(int cantLineaschar,char* archivos[],int cantArchivos,bool caso)
                              else
                              {
                                     fputs("error al acceder al archivo \n",stderr);
-                                    exit(1);
+                                    exit(EXIT_FAILURE);
                              }
                     }
             }
@@ -239,7 +243,7 @@ void validacionEntero(int numero)
     {
             char* salida = "\n error en el parametro de lineas o caracteres \n ";
             fputs(salida,stderr);
-            exit(1);
+            exit(EXIT_FAILURE);
     }
 
 }
@@ -276,4 +280,3 @@ long int posicionaAlInicioLinea(FILE *fp,long int pos)
                 return pos+1;
         }
 }
-
