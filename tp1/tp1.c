@@ -12,10 +12,10 @@ void printError(char* msgError, int codeError);
 char* setFileSize(FILE* fp, long int *length);
 
 // int sha1(char *result, char *bytes, unsigned long length);
-int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long longitudOriginal);
+int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
 unsigned int leftrotate(unsigned int valor,int desplazamiento);
 long int calcularTamanioArchivo(char* nombreFile);
-void asignarDatos(char *file,unsigned char *bloques,long int tamanioOriginal, long int longitudRelleno);
+void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno);
 
 int main(int argc, char* argv[]) {
     int i = 0;
@@ -108,9 +108,9 @@ void printHelp()
     fprintf(stdout, "  echo \"hello\" | tp1\n\n");
 }
 
-int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long longitudOriginal)
+int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal)
 {
-        unsigned long int longitudRelleno;
+        unsigned long long int longitudRelleno;
         longitudRelleno = longitudOriginal;
 
         //incorporacion de bits de relleno 0..63 bytes
@@ -128,6 +128,18 @@ int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long longitudO
         int cantBloques = longitudRelleno/64; //longArchivo/tamanio bloque   bloque = 64bytes
         unsigned char *bloques = malloc((cantBloques)*64);//mas 1 porque se guarda el tamanio
         asignarDatos(nombre_archivo,bloques,longitudOriginal,longitudRelleno); // se almacena el tamanioOrginal al final
+
+
+
+int o = 0;
+for(o=0;o<64;o++)
+{
+    printf("%i ", o);
+    printf("%x\n", (unsigned int)bloques[o]);
+}
+printf("\n\n\n");
+
+
 
 
         /**procesar el bloque en 4 rondas de 20 pasos cada ronda**/
@@ -234,9 +246,9 @@ int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long longitudO
     return 0;
 }
 
-
 //un bloque tiene 64 bytes
-void asignarDatos(char *file,unsigned char *bloques,long int tamanioOriginal, long int longitudRelleno)
+void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno)
+
 {
     FILE *fp = fopen(file,"r");
     char caracter;
@@ -271,21 +283,23 @@ void asignarDatos(char *file,unsigned char *bloques,long int tamanioOriginal, lo
         *(bloques+indice) = (tamanioOriginal>>(56-8*i)) & mascara;
         indice++;
     }
+
 }
 
 
-
-long int calcularTamanioArchivo(char* nombreFile) {
+long int calcularTamanioArchivo(char* nombreFile)
+{
     long int tamanio =0;
     FILE *fp = fopen(nombreFile,"r");
-    fseek(fp, 0, SEEK_END);
+    fseek(fp,0,SEEK_END);
     tamanio = ftell(fp);
     return tamanio;
 }
 
+
 unsigned int leftrotate(unsigned int valor,int desplazamiento)
 {
-    desplazamiento %= 32;
+    desplazamiento %=32;
     unsigned retorno;
     retorno = (valor << desplazamiento) |  (valor >> (32 - desplazamiento));
     return retorno;
