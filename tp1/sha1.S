@@ -36,54 +36,56 @@ sha1:
 #------------------operaciones en 64 bits---------------------------------------------	
 
 	li	t0,0
-	li	t1,0		              	#el tamanio debe venir en bits
-	move 	t0,a2	  	          	#t1|t0 = longArchivoRelleno
+	li	t1,0			#el tamanio debe venir en bits
+	move 	t0,a2			#t1|t0 = longArchivoRelleno
 	move 	t1,a3
 	li	t2,512		
 
 bucle_relleno:
-	rem	t2,t0,t2	            	#caculo el valor de la longitud en modulo 512 (resto)
+	rem	t2,t0,t2		#caculo el valor de la longitud en modulo 512 (resto)
 	beqz	t2,fin_bucle_relleno	#no es necesario considerar la parte mas significativa
 	#suma de los 64 bits
-	addiu	t2,t0,8		          	#agrego 1 byte
-	sltu	t3,t2,t0	          	#(t0 =1) de carry si el resultado es mas chico que el sumando
-	move	t0,t2		              #devolvemos el valor a t0
+	addiu	t2,t0,8			#agrego 1 byte
+	sltu	t3,t2,t0		#(t0 =1) de carry si el resultado es mas chico que el sumando
+	move	t0,t2			#volvamos el valor a t0
 	beqz	t3,bucle_relleno
-	addiu	t1,t1,1		          	#sumamos 1 al la parte mas significativa
-	b	bucle_relleno	          	
+	addiu	t1,t1,1			#sumamos 1 al la parte mas significativa
+	b	bucle_relleno		#solucionar la suma en 64 bits
 	
 fin_bucle_relleno:
-	slti 	t2,t0,65		          #si t0<65 entonces t2 =1 y agregamos 512 bits
+	slti 	t2,t0,65		#si t0<65 entonces t2 =1 y agregamos 512 bits
 	beqz	t2,obtener_bloque
-	addiu	t2,t0,512		          #agrega un bloque de 512 extra
+	addiu	t2,t0,512		#agrega un bloque de 512 extra
 	sltu	t3,t2,t0		
 	move	t0,t2			
-	beqz	t3,obtener_bloque	    #si no hay acarreo no sumar al mas significativo
-	addiu	t1,t1,1			          #t1|t0 = longArchivoRelleno
+	beqz	t3,obtener_bloque	#si no hay acarreo no sumar al mas significativo
+	addiu	t1,t1,1			#t1|t0 = longArchivoRelleno
 									
 obtener_bloque:
 	#obtenemos la cant de bloques dividiendo entre 8*512 con un shiff de 12 bits
+
+	sw	t0,16(fp)		#guardo la longitud relleno en 64 bits en el stack
+	sw	t1,20(fp)
+	sw	a0,24(fp)		#guardo la longitud original en 64 bits en el stack
+	sw	a1,28(fp)	
+
 	srl	t2,t0,12
 	sll	t3,t1,20
 	or	t2,t2,t3
-	srl	t3,t1,12	          	  #t3|t2 = cantidad de bloques
-	sw	t2,16(fp)		            #guardo la cantidad de bloques en el stack 64 bits
-	sw	t3.20(fp)
+	srl	t3,t1,12		
+	sw	t2,32(fp)		#guardo la cantidad de bloques en el stack 64 bits
+	sw	t3.36(fp)		#t3|t2 = cantidad de bloques
 
-	move	a0,t0			            #paso eltamanio como argumento en 64 bits
+	move	a0,t0			#paso el tamanio como argumento en 64 bits
 	move	a1,t1
-	sw	t0,24(fp)		            #guardo la longitud relleno en 64 bits en el stack
-	sw	t1,28(fp)
-	sw	56(fp),32(fp)	        	#guardo la longitud original en 64 bits en el stack, es necesario?
-	sw	60(fp),36(fp)	
 	
-	jal	mymalloc
-	move	s0,v0		            	#guardo en un registro permanente el puntero al inicio del bloque
-				                    	#s0 = puntero al inicio de los bloques
+	jalr	mymalloc
+	move	s0,v0			#guardo en un registro permanente el puntero al inicio del bloque
+					#s0 = puntero al inicio de los bloques
 
-	lw 	t0,24(fp)	            	#t1|t0 = longArchivoRelleno
+	lw 	t0,24(fp)		#t1|t0 = longArchivoRelleno
 	lw 	t1,28(fp)
-	lw 	t2,32(fp)	            	#t3|t2 = longArchivoOriginal
+	lw 	t2,32(fp)		#t3|t2 = longArchivoOriginal
 	lw 	t3,36(fp)
 
 #------------------FIN de operaciones en 64 bits---------------------------------------------	
