@@ -130,18 +130,6 @@ int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long long
         asignarDatos(nombre_archivo,bloques,longitudOriginal,longitudRelleno); // se almacena el tamanioOrginal al final
 
 
-
-int o = 0;
-for(o=0;o<64;o++)
-{
-    printf("%i ", o);
-    printf("%x\n", (unsigned int)bloques[o]);
-}
-printf("\n\n\n");
-
-
-
-
         /**procesar el bloque en 4 rondas de 20 pasos cada ronda**/
         //la memoria temporal cuenta con 5 regstros ABCDE
         unsigned  A=0x67452301;
