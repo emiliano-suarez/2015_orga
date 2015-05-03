@@ -23,13 +23,13 @@ sha1:
 	subu 	sp, sp, 48
 	sw 	ra, 42(sp)
 	sw	$fp, 38(fp) 	
-	sw	$gp, 34(fp)	
+	sw	gp, 34(fp)	
 	move 	$fp, sp
 	
-	sw 	a0, 48(fp)
-	sw	a1, 52(fp) 	
-	sw	a2, 56(fp)
-	sw	a3, 60(fp)
+	sw 	a0, 48($fp)
+	sw	a1, 52($fp) 	
+	sw	a2, 56($fp)
+	sw	a3, 60($fp)
 	
 	#obtencion del tamanio del relleno
 	
@@ -39,10 +39,10 @@ sha1:
 	li	t1,0			#el tamanio debe venir en bits
 	move 	t0,a2			#t1|t0 = longArchivoRelleno
 	move 	t1,a3
-	li	t2,512		
+	li	t4,512		
 
 bucle_relleno:
-	rem	t2,t0,t2		#caculo el valor de la longitud en modulo 512 (resto)
+	remu	t2,t0,t2		#caculo el valor de la longitud en modulo 512 (resto)
 	beqz	t2,fin_bucle_relleno	#no es necesario considerar la parte mas significativa
 	#suma de los 64 bits
 	addiu	t2,t0,8			#agrego 1 byte
@@ -64,10 +64,10 @@ fin_bucle_relleno:
 obtener_bloque:
 	#obtenemos la cant de bloques dividiendo entre 8*512 con un shiff de 12 bits
 
-	sw	t0,16(fp)		#guardo la longitud relleno en 64 bits en el stack
-	sw	t1,20(fp)
-	sw	a0,24(fp)		#guardo la longitud original en 64 bits en el stack
-	sw	a1,28(fp)	
+	sw	t0,16($fp)		#guardo la longitud relleno en 64 bits en el stack
+	sw	t1,20($fp)
+	sw	a0,24($fp)		#guardo la longitud original en 64 bits en el stack
+	sw	a1,28($fp)	
 
 	srl	t2,t0,12
 	sll	t3,t1,20
