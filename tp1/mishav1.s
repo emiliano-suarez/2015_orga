@@ -103,7 +103,9 @@ FOR16PRIMEROS:
 	#AUMENTO VARIABLES
 	
 	addu $t3,$t3,4		#indice = indice + 4
+	sw $t3,60($fp)		#guardo
 	addu $t0,$t0,1		#i = i + 1
+	sw $t0,64($fp)		#guardo
 	
 	b DONDE-SEA-QUE-ME-LLAMARON
 
