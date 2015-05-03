@@ -109,11 +109,39 @@ FOR16PRIMEROS:
 	
 	b DONDE-SEA-QUE-ME-LLAMARON
 
-for(i=16;i<80;i++)
-{
-*(trozos + i) = (*(trozos + (i-3)) ^ *(trozos + (i-8)) ^ *(trozos + (i-14)) ^ *(trozos + (i-16)));
-*(trozos + i) = leftrotate(*(trozos + i),1);
-}
+FOR16TO80:
+	
+	#traigo los datos
+	
+	lw	$t0,64($fp)		#t0	cargo i
+	sll	$t1,$t0,2		#t1 = i*4
+	addu $t2,$s1,$t1	#t2 = trozos + i*4 es decir apunta a trozos[i]
+	
+	addu $t3,$t2,-12	#t3 apunta a trozos(i - 3).. 3 lugares = 4bytesx3 = 12 bytes  
+	lw	$t4,0($t3)		#t4 traigo la palabra a la q apunta t3
+	addu $t5,$t2,-32	#t5 apunta a trozos(i - 8)
+	lw $t6,0($t5)		#t6 traigo la palabra a la que apunta t5
+	
+	xor $t4,$t4,$t6		#t4 = *(trozos + (i-3)) ^ *(trozos + (i-8))
+	
+	addu $t5,$t2,-56	#t5 apunta a trozos(i - 14)
+	lw $t6,0($t5)		#t6 traigo la palabra a la que apunta t5
+
+	xor $t4,$t4,$t6		#t4 = *(trozos + (i-3)) ^ *(trozos + (i-8)) ^ *(trozos + (i-14))
+	
+	addu $t5,$t2,-64	#t5 apunta a trozos(i - 16)
+	lw $t6,0($t5)		#t6 traigo la palabra a la que apunta t5
+
+	xor $t4,$t4,$t6		#t4 = *(trozos + (i-3)) ^ *(trozos + (i-8)) ^ *(trozos + (i-14)) ^ *(trozos + (i-16)));
+	
+	rol	$t4,$t4,1		#leftrotate 1 ¡?
+	
+	sw $t4,0($t2)		#guardo t4 en t2 = trozos + i*4 es decir apunta a trozos[i]
+	
+	addu $t0,$t0,1		#i = i + 1
+	sw $t0,64($fp)		#guardo
+	
+	b DONDE-SEA-QUE-ME-LLAMARON
 
 		
 	lw	$t0,40($fp)
