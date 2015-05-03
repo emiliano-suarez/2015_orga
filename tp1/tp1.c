@@ -9,12 +9,14 @@
 void printHelp();
 void printVersion();
 void printError(char* msgError, int codeError);
-char* setFileSize(FILE* fp, long int *length);
+char* setFileSize(FILE* fp, long long int *length);
 
+long long int calcularRelleno(long long int longitudOriginal);
+//extern long long int calcularRelleno(long long int longitudOriginal);
 // int sha1(char *result, char *bytes, unsigned long length);
 int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
 unsigned int leftrotate(unsigned int valor,int desplazamiento);
-long int calcularTamanioArchivo(char* nombreFile);
+long long int calcularTamanioArchivo(char* nombreFile); //devuelve el tamanio en bits
 void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno);
 
 int main(int argc, char* argv[]) {
@@ -25,7 +27,7 @@ int main(int argc, char* argv[]) {
     int fileCount = 0;
     FILE* fp;
     char *start;
-    long int length;
+    long long int length;
 
     // Parse arguments
     if (argc >= 2) {
@@ -72,18 +74,18 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-char* setFileSize(FILE* fp, long int *length) {
+char* setFileSize(FILE* fp, long long int *length) {
     int character;
     char *start;
     int n = 0;
 
     fseek(fp, 0, SEEK_END);
-    *length = ftell(fp);
+    *length = ftell(fp)*8;	//devuelve el tamanio en bits
 
     fseek(fp, 0, SEEK_SET);
 
     start = malloc(1);
-    start = realloc(start, (*length) * sizeof(char*));
+    start = realloc(start, (*length) );
 
     while ((character = fgetc(fp)) != EOF) {
         start[n++] = (char)character;
@@ -108,26 +110,47 @@ void printHelp()
     fprintf(stdout, "  echo \"hello\" | tp1\n\n");
 }
 
-int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal)
+
+long long int calcularRelleno(long long int longitudOriginal)
 {
-        unsigned long long int longitudRelleno;
+	unsigned long long int longitudRelleno;
         longitudRelleno = longitudOriginal;
 
-        //incorporacion de bits de relleno 0..63 bytes
-        while ((longitudRelleno % 64 )!= 0)
+        //incorporacion de bits de relleno 0..512 bits
+        while ((longitudRelleno % 512 )!= 0)
         {
             longitudRelleno++;
         }
 
-        if((longitudRelleno-longitudOriginal)*8 < 65) //si hay al menos 65 bits agregamos 512 mas
+        if((longitudRelleno-longitudOriginal) < 65) //si hay al menos 65 bits agregamos 512 mas
         {
-            longitudRelleno +=64;
+            longitudRelleno +=512;
         }
 
+	return longitudRelleno;
+}
+
+
+int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal)
+{
+	long long int longitudRelleno = calcularRelleno(longitudOriginal);
+
         /**prepocesamiento**/
-        int cantBloques = longitudRelleno/64; //longArchivo/tamanio bloque   bloque = 64bytes
-        unsigned char *bloques = malloc((cantBloques)*64);//mas 1 porque se guarda el tamanio
+        long long int cantBloques = longitudRelleno/512; //longArchivo/tamanio bloque   bloque = 512bits
+        unsigned char *bloques = malloc((cantBloques)*64);
         asignarDatos(nombre_archivo,bloques,longitudOriginal,longitudRelleno); // se almacena el tamanioOrginal al final
+
+
+
+int o = 0;
+for(o=0;o<64;o++)
+{
+    printf("%i ", o);
+    printf("%x\n", (unsigned int)bloques[o]);
+}
+printf("\n\n\n");
+
+
 
 
         /**procesar el bloque en 4 rondas de 20 pasos cada ronda**/
@@ -245,7 +268,7 @@ void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOrigina
     int cantBitsRelleno = 0;
     char relleno = 0x80; //minimo relleno
     char rellenoCero = 0x00;
-    unsigned mascara = 0x000000FF;
+    unsigned mascara = 0x00000000000000FF;
 
     while( (caracter = getc(fp)) != EOF)
     {
@@ -253,7 +276,7 @@ void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOrigina
             indice++;
     }
 
-    cantBitsRelleno = (longitudRelleno - tamanioOriginal)*8;
+    cantBitsRelleno = (longitudRelleno - tamanioOriginal);
     cantBitsRelleno = cantBitsRelleno - 64 - 8;//restamos 64 bits de tamanio y los 8 bits basicos de relleno;
     *(bloques+indice) = relleno;
     indice++;
@@ -264,8 +287,6 @@ void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOrigina
         indice++;
     }
 
-    tamanioOriginal *= 8; // tamanio en bits
-
     for(i = 0;i<8;i++)
     {
         *(bloques+indice) = (tamanioOriginal>>(56-8*i)) & mascara;
@@ -274,13 +295,13 @@ void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOrigina
 
 }
 
-
-long int calcularTamanioArchivo(char* nombreFile)
+//devuleve el tamanio en bits
+long long int calcularTamanioArchivo(char* nombreFile)
 {
-    long int tamanio =0;
+    long long int tamanio =0;
     FILE *fp = fopen(nombreFile,"r");
     fseek(fp,0,SEEK_END);
-    tamanio = ftell(fp);
+    tamanio = ftell(fp)*8;
     return tamanio;
 }
 
