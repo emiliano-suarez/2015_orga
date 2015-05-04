@@ -20,16 +20,19 @@ sha1:
 	.set reorder
 	.cprestore 24
 	
-	subu 	sp, sp, 48
-	sw 	ra, 42(sp)
-	sw	$fp, 38(fp) 	
-	sw	gp, 34(fp)	
-	move 	$fp, sp
+	subu sp, sp, 104	
 	
-	sw 	a0, 48($fp)
-	sw	a1, 52($fp) 	
-	sw	a2, 56($fp)
-	sw	a3, 60($fp)
+	sw $gp,88($sp)
+	sw $fp,92($sp)
+	sw $ra,96($sp)
+	move $fp, $sp
+	
+	#guardo los parametros con que vine
+	
+	sw $a0, 104($fp) 	#ptero a resultado
+	sw $a1, 108($fp) 	#ptero al nombrearchivo
+	sw $a2, 112($fp) 	#ptero a parte baja del longitudoriginal
+	sw $a3, 116($fp)	#ptero a parte alta del longitudoriginal
 	
 	#obtencion del tamanio del relleno
 	
@@ -93,48 +96,8 @@ obtener_bloque:
 
 #------------------asignar los datos del archivo en los bloques--------------------------------------------- 
 #s0 = puntero al inicio de los bloques
-asignar_datos_aBloque:			#puse cualquier numero
-	ld	t0,234(fp)		#recupero la longitud relleno en 64 bits del el stack
-	ld	t2,234(fp)		#recupero la longitud original en 64 bits del el stack
-
-asignarDatos(nombre_archivo,bloques,longitudOriginal,longitudRelleno); // se almacena el tamanioOrginal al final
-{
-    FILE *fp = fopen(file,"r");
-    char caracter;
-    int indice =0;
-    int i =0;
-    int cantBitsRelleno = 0;
-    char relleno = 0x80; //minimo relleno
-    char rellenoCero = 0x00;
-    unsigned mascara = 0x000000FF;
-
-    while( (caracter = getc(fp)) != EOF)
-    {
-            *(bloques+indice) = caracter;
-            indice++;
-    }
-
-    cantBitsRelleno = (longitudRelleno - tamanioOriginal)*8;
-    cantBitsRelleno = cantBitsRelleno - 64 - 8;//restamos 64 bits de tamanio y los 8 bits basicos de relleno;
-    *(bloques+indice) = relleno;
-    indice++;
-
-    for(i = 0;i<(cantBitsRelleno/8);i++)
-    {
-        *(bloques+indice) = rellenoCero;
-        indice++;
-    }
-
-    tamanioOriginal *= 8; // tamanio en bits
-
-    for(i = 0;i<8;i++)
-    {
-        *(bloques+indice) = (tamanioOriginal>>(56-8*i)) & mascara;
-        indice++;
-    }
-}
-        
 #------------------FIN de asignar los datos del archivo en los bloques---------------------------------------------
+
 
 #------------------hacer el bucle de sha1---------------------------------------------
 #s0 = puntero al inicio de los bloques
