@@ -203,11 +203,11 @@ return_algoritmo:
 
 
 	#falta ver los valores
-	sw	0,0(a0)
-	sw	0,4(a0)
-	sw	0,8(a0)
-	sw	0,12(a0)
-	sw	0,16(a0)
+	sw	s2,0(a0)
+	sw	s3,4(a0)
+	sw	s4,8(a0)
+	sw	s5,12(a0)
+	sw	s6,16(a0)
 	
 
 	lw	$fp,92(sp)
