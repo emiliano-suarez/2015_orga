@@ -51,12 +51,12 @@ algoritmoSha1:
 #
 	#cargo variables en s0..s7
 
-	move	s1,a0
-	move	s2,a1
-	move	s3,a2
-	move	s4,a3
-	move	s5,4(a3)
-	move	s6,8(a3)
+	lw	s1,a0
+	lw	s2,a1
+	lw	s3,a2
+	lw	s4,a3
+	lw	s5,4(a3)
+	lw	s6,8(a3)
 
 	#inicializar i de vuelta
 	sw	zero,64($fp)		# i = 0
