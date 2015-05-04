@@ -51,10 +51,10 @@ algoritmoSha1:
 #
 	#cargo variables en s0..s7
 
-	lw	s1,a0
-	lw	s2,a1
-	lw	s3,a2
-	lw	s4,a3
+	move	s1,0(a0)
+	lw	s2,0(a1)
+	lw	s3,0(a2)
+	lw	s4,0(a3)
 	lw	s5,4(a3)
 	lw	s6,8(a3)
 
@@ -184,8 +184,8 @@ ASIGNACIONTEMPORAL:
 	sw	t0,s2			#a = temp;
 
 	#AUMENTO I
-	addu t1,t1,1			#i = i + 1
-	sw t1,64($fp)			#guardo
+	addiu 	t1,t1,1			#i = i + 1
+	sw 	t1,64($fp)		#guardo
 	
 	jalr 	ra
 }
