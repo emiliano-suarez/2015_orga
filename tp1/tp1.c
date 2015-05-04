@@ -11,8 +11,14 @@ void printVersion();
 void printError(char* msgError, int codeError);
 char* setFileSize(FILE* fp, long long int *length);
 
-long long int calcularRelleno(long long int longitudOriginal);
+//extern void cargarTrozos(char *bloque,int *indice,unsigned int *Trozos);
+//extern void algoritmoSha1(unsigned int *Trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e);
+//extern void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno);
 //extern long long int calcularRelleno(long long int longitudOriginal);
+
+long long int calcularRelleno(long long int longitudOriginal);
+void cargarTrozos(char *bloque,int *indice,unsigned int *Trozos);
+void algoritmoSha1(unsigned int *Trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e);
 // int sha1(char *result, char *bytes, unsigned long length);
 int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
 unsigned int leftrotate(unsigned int valor,int desplazamiento);
@@ -110,7 +116,6 @@ void printHelp()
     fprintf(stdout, "  echo \"hello\" | tp1\n\n");
 }
 
-
 long long int calcularRelleno(long long int longitudOriginal)
 {
 	unsigned long long int longitudRelleno;
@@ -131,6 +136,75 @@ long long int calcularRelleno(long long int longitudOriginal)
 }
 
 
+void cargarTrozos(char *bloques,int *indice,unsigned int *trozos)
+{
+	int i;
+	unsigned mascara = 0x000000FF;
+        for(i=0;i<16;i++)
+        {
+             trozos[i] = (*(bloques+*indice) & mascara);
+             trozos[i]<<=8;
+             trozos[i]|= (*(bloques+*indice+1) & mascara);
+             trozos[i]<<=8;
+             trozos[i]|= (*(bloques+*indice+2) & mascara);
+             trozos[i]<<=8;
+             trozos[i]|= (*(bloques+*indice+3) & mascara);
+             *indice+=4;
+        }
+
+        for(i=16;i<80;i++)
+        {
+             trozos[i] = (trozos[i-3] ^ trozos[i-8] ^ trozos[i-14] ^ trozos [i-16]);
+             trozos[i] = leftrotate(trozos[i],1);
+        }
+}
+
+
+void algoritmoSha1(unsigned int *trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e)
+{
+
+int i;
+unsigned int k;
+unsigned int f;
+unsigned int temp;
+
+	for(i=0;i<80;i++)
+        {
+		if(i<=19) //0 ≤ i ≤ 19
+		{
+		    f = (*b & *c) ^ ((~*b) & *d);
+		    k = 0x5A827999;
+		}
+		else
+		    if( (i>=20)&&(i<=39))//20 ≤ i ≤ 39
+		    {
+			f = *b ^ *c ^ *d;
+			k = 0x6ED9EBA1;
+		    }
+		    else
+			if( (i>=40)&&(i<=59))//40 ≤ i ≤ 59
+			{
+			    f = (*b & *c) | (*b & *d) | (*c & *d);
+			    k = 0x8F1BBCDC;
+			}
+			else
+			    if( (i>=60)&&(i<=79))//60 ≤ i ≤ 79
+			    {
+				f = *b ^ *c ^ *d;
+				k = 0xCA62C1D6;
+			    }
+
+		temp = leftrotate (*a,5);
+		temp = temp + f + *e + k + trozos[i];
+		*e = *d;
+		*d = *c;
+		*c = leftrotate(*b ,30);
+		*b = *a;
+		*a = temp;
+	}
+}
+
+
 int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal)
 {
 	long long int longitudRelleno = calcularRelleno(longitudOriginal);
@@ -140,8 +214,8 @@ int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long long
         unsigned char *bloques = malloc((cantBloques)*64);
         asignarDatos(nombre_archivo,bloques,longitudOriginal,longitudRelleno); // se almacena el tamanioOrginal al final
 
-
-
+//sirve para debbuggear el asignar datos que se implementará en assembly
+/*
 int o = 0;
 for(o=0;o<64;o++)
 {
@@ -149,9 +223,7 @@ for(o=0;o<64;o++)
     printf("%x\n", (unsigned int)bloques[o]);
 }
 printf("\n\n\n");
-
-
-
+*/
 
         /**procesar el bloque en 4 rondas de 20 pasos cada ronda**/
         //la memoria temporal cuenta con 5 regstros ABCDE
@@ -161,38 +233,20 @@ printf("\n\n\n");
         unsigned  D=0x10325476;
         unsigned  E=0xC3D2E1F0;
 
-        unsigned int trozos[80]; //big endian
+        //unsigned int trozos[80]; //big endian
+	unsigned int *trozos = malloc(80*sizeof(int));
+
         int indice = 0;
         int i;
-        unsigned int k;
-        unsigned int f;
-        unsigned int temp;
         unsigned a = 0;
         unsigned b = 0;
         unsigned c = 0;
         unsigned d = 0;
         unsigned e = 0;
-        unsigned mascara = 0x000000FF;
 
         while(cantBloques--)
         {
-                for(i=0;i<16;i++)
-                {
-                    trozos[i] = (*(bloques+indice) & mascara);
-                    trozos[i]<<=8;
-                    trozos[i]|= (*(bloques+indice+1) & mascara);
-                    trozos[i]<<=8;
-                    trozos[i]|= (*(bloques+indice+2) & mascara);
-                    trozos[i]<<=8;
-                    trozos[i]|= (*(bloques+indice+3) & mascara);
-                    indice+=4;
-                }
-
-                for(i=16;i<80;i++)
-                {
-                    trozos[i] = (trozos[i-3] ^ trozos[i-8] ^ trozos[i-14] ^ trozos [i-16]);
-                    trozos[i] = leftrotate(trozos[i],1);
-                }
+		cargarTrozos(bloques, &indice, trozos);
 
                 a = A;
                 b = B;
@@ -200,47 +254,13 @@ printf("\n\n\n");
                 d = D;
                 e = E;
 
+		algoritmoSha1(trozos,&a,&b,&c,&d,&e);
 
-                for(i=0;i<80;i++)
-                {
-                        if(i<=19) //0 ≤ i ≤ 19
-                        {
-                            f = (b & c) ^ ((~b) & d);
-                            k = 0x5A827999;
-                        }
-                        else
-                            if( (i>=20)&&(i<=39))//20 ≤ i ≤ 39
-                            {
-                                f = b ^ c ^ d;
-                                k = 0x6ED9EBA1;
-                            }
-                            else
-                                if( (i>=40)&&(i<=59))//40 ≤ i ≤ 59
-                                {
-                                    f = (b & c) | (b & d) | (c & d);
-                                    k = 0x8F1BBCDC;
-                                }
-                                else
-                                    if( (i>=60)&&(i<=79))//60 ≤ i ≤ 79
-                                    {
-                                        f = b ^ c ^ d;
-                                        k = 0xCA62C1D6;
-                                    }
-
-                        temp = leftrotate (a,5);
-                        temp = temp + f + e + k + trozos[i];
-                        e = d;
-                        d = c;
-                        c = leftrotate(b ,30);
-                        b = a;
-                        a = temp;
-                }
-
-            A += a;
-            B += b;
-            C += c;
-            D += d;
-            E += e;
+           	A += a;
+          	B += b;
+           	C += c;
+           	D += d;
+            	E += e;
 
         }
 
