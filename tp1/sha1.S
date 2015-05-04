@@ -20,19 +20,19 @@ sha1:
 	.set reorder
 	.cprestore 24
 	
-	subu sp, sp, 104	
+	subu 	sp, sp, 104	
 	
-	sw $gp,88($sp)
-	sw $fp,92($sp)
-	sw $ra,96($sp)
-	move $fp, $sp
+	sw 	gp,88(sp)
+	sw 	$fp,92(sp)
+	s	ra,96(sp)
+	mov	$fp, sp
 	
 	#guardo los parametros con que vine
 	
-	sw $a0, 104($fp) 	#ptero a resultado
-	sw $a1, 108($fp) 	#ptero al nombrearchivo
-	sw $a2, 112($fp) 	#ptero a parte baja del longitudoriginal
-	sw $a3, 116($fp)	#ptero a parte alta del longitudoriginal
+	sw 	a0, 104($fp) 	#ptero a resultado
+	sw 	a1, 108($fp) 	#ptero al nombrearchivo
+	sw 	a2, 112($fp) 	#ptero a parte baja del longitudoriginal
+	sw 	a3, 116($fp)	#ptero a parte alta del longitudoriginal
 	
 	#obtencion del tamanio del relleno
 	
@@ -72,24 +72,31 @@ obtener_bloque:
 	sw	a0,24($fp)		#guardo la longitud original en 64 bits en el stack
 	sw	a1,28($fp)	
 
-	srl	t2,t0,12
-	sll	t3,t1,20
+	li	t4,9			#divido el tamnio entre 512 para obtener la cantBloques
+	srl	t2,t0,t4
+	li	t4,23
+	sll	t3,t1,t4
 	or	t2,t2,t3
-	srl	t3,t1,12		
-	sw	t2,32(fp)		#guardo la cantidad de bloques en el stack 64 bits
-	sw	t3.36(fp)		#t3|t2 = cantidad de bloques
+	li	t4,9
+	srl	t3,t1,t4		
+	sw	t2,32($fp)		#guardo la cantidad de bloques en el stack 64 bits
+	sw	t3.36($fp)		#t3|t2 = cantidad de bloques
 
+#---------corresponde a asignar datos------------
 	move	a0,t0			#paso el tamanio como argumento en 64 bits
 	move	a1,t1
-	
+
+#evaluar como se hace el malloc	
 	jalr	mymalloc
 	move	s0,v0			#guardo en un registro permanente el puntero al inicio del bloque
 					#s0 = puntero al inicio de los bloques
 
-	lw 	t0,24(fp)		#t1|t0 = longArchivoRelleno
-	lw 	t1,28(fp)
-	lw 	t2,32(fp)		#t3|t2 = longArchivoOriginal
-	lw 	t3,36(fp)
+	lw 	t0,16($fp)		#t1|t0 = longArchivoRelleno
+	lw 	t1,20($fp)
+	lw 	t2,24($fp)		#t3|t2 = longArchivoOriginal
+	lw 	t3,28($fp)
+	lw 	t4,32($fp)		#t4|t5 = cantBloques
+	lw 	t5,36($fp)
 
 #------------------FIN de operaciones en 64 bits---------------------------------------------	
 
