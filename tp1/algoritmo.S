@@ -41,28 +41,23 @@ algoritmoSha1:
 	
 #-------------------algoritmo--------------------------------------
 			
-	lw	t0,40($fp)
-	sw	t0,s2 		#a = A;
-	lw	t0,44($fp) 
-	sw	t0,s3 		#b = B;
-	lw	t0,48($fp)
-	sw	t0,s4 		#c = C;
-	lw	t0,52($fp)
-	sw	t0,s5 		#d = D;
-	lw	t0,56($fp)
-	sw	t0,s6 		#e = E;
-	
-	#inicializar i de vuelta
-	sw	zero,64($fp)
-	
-#for(i=0;i<80;i++)
-#{
-PROCESO0A19:
+#
+#s2 = a
+#s3 = b
+#s4 = c
+#s5 = d
+#s6 = e
+#s7 = f (funcion)
+#
 
-	#limpio f, f es s7
-	sw 	zero,s7
+
+	#inicializar i de vuelta
+	sw	zero,64($fp)		# i = 0
+	lw	t6,64($fp)		# traigo i, t6 = i
 	
-	#a = s2,...e = s6
+PROCESO0A19:
+	lw	t6,64($fp)		# traigo i, t6 = i
+	sw 	zero,s7		
 	
 	and	s7,s3,s4		#en f(s7) <-- (b & c)
 	not	t0,s3			#t0 niego b
@@ -72,11 +67,21 @@ PROCESO0A19:
 	lw 	t2,ctek1		#cargo en t2, k1
 	sw 	t2,72($fp)		#72 es donde esta k en el stack
 
-	b DONDE-SEA-QUE-ME-LLAMARON
+	
+	jal	ASIGNACIONTEMPORAL
+
+
+	addiu	t6,t6,1
+	sw	t6,64($fp)
+	
+	addiu	t7,t6,-20
+	beqz	t7,PROCESO20A39
+
+	b PROCESO0A19
+
 
 PROCESO20A39:
-	
-	#limpio f, f es s7
+	lw	t6,64($fp)		# traigo i, t6 = i
 	sw 	zero,s7
 	
 	xor 	s7,s3,s4		#f <-- b ^ c
@@ -84,12 +89,21 @@ PROCESO20A39:
 	
 	lw 	t0,ctek2		#cargo en t0, k2
 	sw 	t0,72($fp)		#72 es donde esta k en el stack
+
+
+	jal	ASIGNACIONTEMPORAL
+
+
+	addiu	t6,t6,1
+	sw	t6,64($fp)
 	
-	b DONDE-SEA-QUE-ME-LLAMARON
+	addiu	t7,t6,-40
+	beqz	t7,PROCESO40A59
+	
+	b PROCESO20A39
 	
 PROCESO40A59:
-
-	#limpio f, f es s7
+	lw	t6,64($fp)		# traigo i, t6 = i
 	sw	zero,s7
 	
 	and 	s7,s3,s4		#en f(s7) <-- (b & c)
@@ -103,12 +117,21 @@ PROCESO40A59:
 	
 	lw 	t0,ctek3		#cargo en t0, k3
 	sw 	t0,72($fp)		#72 es donde esta k en el stack
+
+
+	jal	ASIGNACIONTEMPORAL	
+
+
+	addiu	t6,t6,1
+	sw	t6,64($fp)
 	
-	b DONDE-SEA-QUE-ME-LLAMARON	
+	addiu	t7,t6,-60
+	beqz	t7,PROCESO60A79
+	
+	b PROCESO40A59	
 	
 PROCESO60A79:
-
-	#limpio f, f es s7
+	lw	t6,64($fp)		# traigo i, t6 = i
 	sw 	zero,s7
 	
 	xor 	s7,s3,s4		#f <-- b ^ c
@@ -116,8 +139,17 @@ PROCESO60A79:
 	
 	lw 	t0,ctek4		#cargo en t0, k4
 	sw 	t0,72($fp)		#72 es donde esta k en el stack
+
+
+	jal	ASIGNACIONTEMPORAL
+
+	addiu	t6,t6,1
+	sw	t6,64($fp)
+
+	addiu	t7,t6,-80
+	beqz	t7,return_algoritmo
 	
-	b DONDE-SEA-QUE-ME-LLAMARON
+	b PROCESO60A79
 	
 
 ASIGNACIONTEMPORAL:
@@ -148,12 +180,28 @@ ASIGNACIONTEMPORAL:
 	addu t1,t1,1			#i = i + 1
 	sw t1,64($fp)			#guardo
 	
-	b DONDE-SEA-QUE-ME-LLAMARON
+	jalr 	ra
 }
 
-
-#########ACA FALTA DISMINUIR LA CANTIDAD DE BLOUQES!!! DEL WHILE!!
+return_algoritmo:
 #--------------------FIN algoritmo--------------------------------------
+
+	
+	lw 	a0, 104($fp) 		# trozos
+	lw 	a1, 108($fp) 		# a
+	lw 	a2, 112($fp) 		# b
+	lw 	a3, 116($fp)		# c
+	lw 	4(a3), 120($fp)		# d
+	lw 	8(a3), 124($fp)		# e
+
+
+	#falta ver los valores
+	sw	0,0(a0)
+	sw	0,4(a0)
+	sw	0,8(a0)
+	sw	0,12(a0)
+	sw	0,16(a0)
+	
 
 	lw	$fp,92(sp)
 	lw	ra, 96(sp)
@@ -164,3 +212,17 @@ ASIGNACIONTEMPORAL:
 	#
 	j	ra
 	.end	algoritmoSha1
+
+
+
+	.data	# comienza zona de datos
+
+	cteA: .word 0x67452301
+	cteB: .word 0xEFCDAB89
+	cteC: .word 0x98BADCFE
+	cteD: .word 0x10325476
+	cteE: .word 0xC3D2E1F0
+	ctek1: .word 0x5A827999;
+	ctek2: .word 0x6ED9EBA1;
+	ctek3: .word 0x8F1BBCDC;
+	ctek4: .word 0xCA62C1D6;
