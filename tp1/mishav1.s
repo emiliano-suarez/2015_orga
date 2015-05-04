@@ -22,16 +22,16 @@ sha1:
 	
 	#ASIGNAR CTES, VER ESTO!!!!!! CHEQUEAR QUE SEA ASI!
 
-	lw t0, cteA
-	sw t0, 40($fp) #40 es el lugar de A
-	lw t0, cteB
-	sw t0, 44($fp)
-	lw t0, cteC
-	sw t0, 48($fp)
-	lw t0, cteD
-	sw t0, 52($fp)
-	lw t0, cteE
-	sw t0, 56($fp) #56 es el lugar de E
+	lw $t0, cteA
+	sw $t0, 40($fp) #40 es el lugar de A
+	lw $t0, cteB
+	sw $t0, 44($fp)
+	lw $t0, cteC
+	sw $t0, 48($fp)
+	lw $t0, cteD
+	sw $t0, 52($fp)
+	lw $t0, cteE
+	sw $t0, 56($fp) #56 es el lugar de E
 
 	#MALLOC del de 80, trozos
 	
@@ -160,44 +160,124 @@ FOR16TO80:
 	
 for(i=0;i<80;i++)
 {
-if(i<=19) //0 ≤ i ≤ 19
-{
-f = (b & c) ^ ((~b) & d);
-k = 0x5A827999;
-}
-else
-if( (i>=20)&&(i<=39))//20 ≤ i ≤ 39
-{
-f = b ^ c ^ d;
-k = 0x6ED9EBA1;
-}
-else
-if( (i>=40)&&(i<=59))//40 ≤ i ≤ 59
-{
-f = (b & c) | (b & d) | (c & d);
-k = 0x8F1BBCDC;
-}
-else
-if( (i>=60)&&(i<=79))//60 ≤ i ≤ 79
-{
-f = b ^ c ^ d;
-k = 0xCA62C1D6;
+PROCESO0A19:
+
+	#limpio f, f es s7
+	sw $zero,$s7
+	
+	#a = s2,...e = s6
+	
+	and $s7,$s3,$s4		#en f(s7) <-- (b & c)
+	not $t0,$s3			#t0 niego b
+	and $t1,$t0,$s5		#en t1 <-- ((~b) & d)
+	xor	$s7,$s7,$t1		#f(s7) <-- (b & c) ^ ((~b) & d)
+	
+	lw $t2,ctek1		#cargo en t2, k1
+	sw $t2,72($fp)		#72 es donde esta k en el stack
+
+	b DONDE-SEA-QUE-ME-LLAMARON
+
+PROCESO20A39:
+	
+	#limpio f, f es s7
+	sw $zero,$s7
+	
+	xor $s7,$s3,$s4		#f <-- b ^ c
+	xor $s7,$s7,$s5		#f <-- b ^ c ^ d
+	
+	lw $t0,ctek2		#cargo en t0, k2
+	sw $t0,72($fp)		#72 es donde esta k en el stack
+	
+	b DONDE-SEA-QUE-ME-LLAMARON
+	
+PROCESO40A59:
+
+	#limpio f, f es s7
+	sw $zero,$s7
+	
+	and $s7,$s3,$s4		#en f(s7) <-- (b & c)
+	and $t0,$s3,$5		#en t0 <-- (b & d)
+	
+	or	$s7,$s7,$t0		#f <-- (b & c) | (b & d)
+	
+	and $t0,$s4,$5		#en t0 <-- (c & d)
+	
+	or $s7,$s7,$t0		#f <-- (b & c) | (b & d) | (c & d)
+	
+	lw $t0,ctek3		#cargo en t0, k3
+	sw $t0,72($fp)		#72 es donde esta k en el stack
+	
+	b DONDE-SEA-QUE-ME-LLAMARON	
+	
+PROCESO60A79:
+
+	#limpio f, f es s7
+	sw $zero,$s7
+	
+	xor $s7,$s3,$s4		#f <-- b ^ c
+	xor $s7,$s7,$s5		#f <-- b ^ c ^ d
+	
+	lw $t0,ctek4		#cargo en t0, k4
+	sw $t0,72($fp)		#72 es donde esta k en el stack
+	
+	b DONDE-SEA-QUE-ME-LLAMARON
+	
+
+ASIGNACIONTEMPORAL:
+
+	#ESTO FINALIZA EL FOR DE 80 CON EL ALGORITMO PER SE
+	
+	rol $t0,$s2,5		#en t0 leftrotate a 5
+	addu $t0,$t0,$s7	#t0 = t0 + f
+	addu $t0,$t0,$s6	#t0 = t0 + f + e
+	lw	$t1,72($fp)		#t1 cargo k
+	addu $t0,$t0,$t1	#t0 = t0 + f + e + k
+	
+	lw	$t1,64($fp)		#t1	cargo i
+	sll	$t2,$t1,2		#t2 = i*4
+	addu $t3,$s1,$t2	#t3 = trozos + i*4 es decir apunta a trozos[i]
+	lw	$t4,0($t3)		#t4 traigo la palabra a la q apunta t3
+	
+	addu $t0,$t0,$t4	#t0 = t0 + f + e + k + trozos[i]
+	
+	sw	$t0,76($fp)		#guardo t0 en temp (72($fp))
+	sw	$s5,$s6			#e = d;
+	sw	$s4,$s5			#d = c;
+	rol	$s4,$s3,30		#c = leftrotate(b ,30);
+	sw	$s2,$s3			#b = a;
+	sw	$t0,$s2			#a = temp;
+
+	#AUMENTO I
+	addu $t1,$t1,1		#i = i + 1
+	sw $t1,64($fp)		#guardo
+	
+	b DONDE-SEA-QUE-ME-LLAMARON
 }
 
-temp = leftrotate (a,5);
-temp = temp + f + e + k + trozos[i];
-e = d;
-d = c;
-c = leftrotate(b ,30);
-b = a;
-a = temp;
-}
+ASIGNACIONCTES:
 
-A += a;
-B += b;
-C += c;
-D += d;
-E += e;
+	lw	$t0,40($fp)
+	addu $t0,$t0,$s2	#A += a
+	sw	$t0,$40($fp) 	#guardo A += a
+	
+	lw	$t0,44($fp) 
+	addu $t0,$t0,$s3	#B += b
+	sw	$t0,44($fp)		#guardo B += b
+	
+	lw	$t0,48($fp)
+	addu $t0,$t0,$s4	#C += c
+	sw	$t0,48($fp)		#guardo C += c
+	
+	lw	$t0,52($fp)
+	addu $t0,$t0,$s5	#D += d
+	sw	$t0,52($fp)		#guardo D += d
+	
+	lw	$t0,56($fp)
+	addu $t0,$t0,$s6	#E += e
+	sw	$t0,56($fp)		#guardo E += e
+
+#########ACA FALTA DISMINUIR LA CANTIDAD DE BLOUQES!!! DEL WHILE!!
+	
 
 }
 
@@ -223,4 +303,8 @@ return 0;
 	cteC: .word 0x98BADCFE
 	cteD: .word 0x10325476
 	cteE: .word 0xC3D2E1F0
+	ctek1: .word 0x5A827999;
+	ctek2: .word 0x6ED9EBA1;
+	ctek3: .word 0x8F1BBCDC;
+	ctek4: .word 0xCA62C1D6;
 	
