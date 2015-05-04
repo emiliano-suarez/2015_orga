@@ -49,7 +49,14 @@ algoritmoSha1:
 #s6 = e
 #s7 = f (funcion)
 #
+	#cargo variables en s0..s7
 
+	move	s1,a0
+	move	s2,a1
+	move	s3,a2
+	move	s4,a3
+	move	s5,4(a3)
+	move	s6,8(a3)
 
 	#inicializar i de vuelta
 	sw	zero,64($fp)		# i = 0
@@ -107,11 +114,11 @@ PROCESO40A59:
 	sw	zero,s7
 	
 	and 	s7,s3,s4		#en f(s7) <-- (b & c)
-	and 	t0,s3,5			#en t0 <-- (b & d)
+	and 	t0,s3,s5			#en t0 <-- (b & d)
 	
 	or	s7,s7,t0		#f <-- (b & c) | (b & d)
 	
-	and 	t0,s4,5			#en t0 <-- (c & d)
+	and 	t0,s4,s5			#en t0 <-- (c & d)
 	
 	or 	s7,s7,t0		#f <-- (b & c) | (b & d) | (c & d)
 	
@@ -169,7 +176,7 @@ ASIGNACIONTEMPORAL:
 	
 	addu 	t0,t0,t4		#t0 = t0 + f + e + k + trozos[i]
 	
-	sw	t0,76(fp)		#guardo t0 en temp (72($fp))
+	sw	t0,76(fp)		#guardo t0 en temp (76($fp))
 	sw	s5,s6			#e = d;
 	sw	s4,s5			#d = c;
 	rol	s4,s3,30		#c = leftrotate(b ,30);
