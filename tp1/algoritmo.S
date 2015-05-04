@@ -35,8 +35,12 @@ algoritmoSha1:
 	sw 	a1, 108($fp) 		# a
 	sw 	a2, 112($fp) 		# b
 	sw 	a3, 116($fp)		# c
-	sw 	4(a3), 120($fp)		# d
-	sw 	8(a3), 124($fp)		# e
+	
+	lw	t0,4(a3)
+	lw	t1,8(a3)
+
+	sw 	t0, 120($fp)		# d
+	sw 	t1, 124($fp)		# e
 
 	
 #-------------------algoritmo--------------------------------------
@@ -51,7 +55,7 @@ algoritmoSha1:
 #
 	#cargo variables en s0..s7
 
-	move	s1,0(a0)
+	move	s1,a0
 	lw	s2,0(a1)
 	lw	s3,0(a2)
 	lw	s4,0(a3)
@@ -64,7 +68,7 @@ algoritmoSha1:
 	
 PROCESO0A19:
 	lw	t6,64($fp)		# traigo i, t6 = i
-	sw 	zero,s7		
+	move 	s7,zero		
 	
 	and	s7,s3,s4		#en f(s7) <-- (b & c)
 	not	t0,s3			#t0 niego b
@@ -89,7 +93,7 @@ PROCESO0A19:
 
 PROCESO20A39:
 	lw	t6,64($fp)		# traigo i, t6 = i
-	sw 	zero,s7
+	move 	s7,zero	
 	
 	xor 	s7,s3,s4		#f <-- b ^ c
 	xor 	s7,s7,s5		#f <-- b ^ c ^ d
@@ -111,7 +115,7 @@ PROCESO20A39:
 	
 PROCESO40A59:
 	lw	t6,64($fp)		# traigo i, t6 = i
-	sw	zero,s7
+	move 	s7,zero	
 	
 	and 	s7,s3,s4		#en f(s7) <-- (b & c)
 	and 	t0,s3,s5			#en t0 <-- (b & d)
@@ -139,7 +143,7 @@ PROCESO40A59:
 	
 PROCESO60A79:
 	lw	t6,64($fp)		# traigo i, t6 = i
-	sw 	zero,s7
+	move 	s7,zero	
 	
 	xor 	s7,s3,s4		#f <-- b ^ c
 	xor 	s7,s7,s5		#f <-- b ^ c ^ d
@@ -176,19 +180,18 @@ ASIGNACIONTEMPORAL:
 	
 	addu 	t0,t0,t4		#t0 = t0 + f + e + k + trozos[i]
 	
-	sw	t0,76(fp)		#guardo t0 en temp (76($fp))
-	sw	s5,s6			#e = d;
-	sw	s4,s5			#d = c;
+	sw	t0,76($fp)		#guardo t0 en temp (76($fp))
+	sw	s5,0(s6)		#e = d;
+	sw	s4,0(s5)		#d = c;
 	rol	s4,s3,30		#c = leftrotate(b ,30);
-	sw	s2,s3			#b = a;
-	sw	t0,s2			#a = temp;
+	sw	s2,0(s3)		#b = a;
+	sw	t0,0(s2)		#a = temp;
 
 	#AUMENTO I
 	addiu 	t1,t1,1			#i = i + 1
 	sw 	t1,64($fp)		#guardo
 	
 	jalr 	ra
-}
 
 return_algoritmo:
 #--------------------FIN algoritmo--------------------------------------
@@ -198,8 +201,12 @@ return_algoritmo:
 	lw 	a1, 108($fp) 		# a
 	lw 	a2, 112($fp) 		# b
 	lw 	a3, 116($fp)		# c
-	lw 	4(a3), 120($fp)		# d
-	lw 	8(a3), 124($fp)		# e
+
+	lw	t0,4(a3)
+	lw	t1,8(a3)
+
+	lw 	t0, 120($fp)		# d
+	lw 	t1, 124($fp)		# e
 
 
 	#falta ver los valores
