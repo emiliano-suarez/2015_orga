@@ -15,7 +15,7 @@ long long int calcularRelleno(long long int longitudOriginal);
 void cargarTrozos(char *bloque,unsigned int *Trozos);
 void algoritmoSha1(unsigned int *Trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e);
 // int sha1(char *result, char *bytes, unsigned long length);
-int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
+extern int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
 unsigned int leftrotate(unsigned int valor,int desplazamiento);
 long long int calcularTamanioArchivo(char* nombreFile); //devuelve el tamanio en bits
 void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno);

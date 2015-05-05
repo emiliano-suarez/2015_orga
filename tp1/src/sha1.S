@@ -25,7 +25,7 @@ sha1:
 	sw 	gp,88(sp)
 	sw 	$fp,92(sp)
 	sw	ra,96(sp)
-	mov	$fp, sp
+	move	$fp, sp
 	
 	#guardo los parametros con que vine
 	
@@ -57,7 +57,7 @@ bucle_relleno:
 	
 fin_bucle_relleno:
 	slti 	t2,t0,65		#si t0<65 entonces t2 =1 y agregamos 512 bits
-	beqz	t2,obtener_bloque
+	beqz	t2,obtener_cant_bloque
 	addiu	t2,t0,512		#agrega un bloque de 512 extra
 	sltu	t3,t2,t0		
 	move	t0,t2			
@@ -78,7 +78,7 @@ obtener_cant_bloque:
 	srl	t3,t1,9		
 
 	sw	t2,32($fp)		#guardo la cantidad de bloques en el stack 64 bits
-	sw	t3.36($fp)		#t3|t2 = cantidad de bloques
+	sw	t3,36($fp)		#t3|t2 = cantidad de bloques
 
 #------------------FIN de operaciones en 64 bits---------------------------------------------	
 
@@ -95,12 +95,13 @@ bucle_sha1:
 #s0 = bloques
 #s1 = trozos
 
-	lw	s0, 108($fp)		#apunto a bloques
 
-	li	a0,80			#malloc
+
+	li	a0,320			#malloc
 	la	t0,mymalloc
-	jalr 	ra,$t0
+	jalr 	ra,t0
 	move	s1,v0
+	lw	s0, 108($fp)		#apunto a bloques
 					
 #--------------------
 	sw	zero,64($fp) 		# i=0
@@ -243,7 +244,8 @@ PROCESO0A19:
 	sw 	t2,72($fp)		#72 es donde esta k en el stack
 
 	
-	jal	ASIGNACIONTEMPORAL
+	la	t4,ASIGNACIONTEMPORAL
+	jalr	t4
 
 
 	addiu	t6,t6,1
@@ -266,7 +268,8 @@ PROCESO20A39:
 	sw 	t0,72($fp)		#72 es donde esta k en el stack
 
 
-	jal	ASIGNACIONTEMPORAL
+	la	t4,ASIGNACIONTEMPORAL
+	jalr	t4
 
 
 	addiu	t6,t6,1
@@ -294,7 +297,8 @@ PROCESO40A59:
 	sw 	t0,72($fp)		#72 es donde esta k en el stack
 
 
-	jal	ASIGNACIONTEMPORAL	
+	la	t4,ASIGNACIONTEMPORAL
+	jalr	t4
 
 
 	addiu	t6,t6,1
@@ -316,7 +320,8 @@ PROCESO60A79:
 	sw 	t0,72($fp)		#72 es donde esta k en el stack
 
 
-	jal	ASIGNACIONTEMPORAL
+	la	t4,ASIGNACIONTEMPORAL
+	jalr	t4
 
 	addiu	t6,t6,1
 	sw	t6,64($fp)
@@ -368,7 +373,7 @@ return_algoritmo:
 	sw	t0,32			#traigo LO de cantBloques
 	sw	t1,36			#traigo HI de cantBloques
 	
-	bneqz	t0,no_hay_over		#si LO es distinto de cero, entonces no hay problema
+	bnez	t0,no_hay_over		#si LO es distinto de cero, entonces no hay problema
 	beqz	t1,fin_bucle			#si HI es cero entonces termina
 	addiu	t1,t1,-1		#restamos 1 al la parte mas significativa
 	lw	t0,cteAux		#asignamos a t0 = 0xffffffff
@@ -466,7 +471,7 @@ for0to4:
 	b	for0to4
 	
 fin:
-
+	li	v0,0
 
 #---------------FIN asignar datos de retorno ------------------------	
 
