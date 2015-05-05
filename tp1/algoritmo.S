@@ -36,8 +36,8 @@ algoritmoSha1:
 	sw 	a2, 112($fp) 		# b
 	sw 	a3, 116($fp)		# c
 	
-	lw	t0,4(a3)
-	lw	t1,8(a3)
+	la	t0,16(a0)		# dir
+	la	t1,20(a0)		# dir
 
 	sw 	t0, 120($fp)		# d
 	sw 	t1, 124($fp)		# e
@@ -201,20 +201,14 @@ return_algoritmo:
 	lw 	a1, 108($fp) 		# a
 	lw 	a2, 112($fp) 		# b
 	lw 	a3, 116($fp)		# c
+	lw 	t6, 120($fp)		# d
+	lw 	t7, 124($fp)		# e
 
-	lw	t0,4(a3)
-	lw	t1,8(a3)
-
-	lw 	t0, 120($fp)		# d
-	lw 	t1, 124($fp)		# e
-
-
-	#falta ver los valores
-	sw	s2,0(a0)
-	sw	s3,4(a0)
-	sw	s4,8(a0)
-	sw	s5,12(a0)
-	sw	s6,16(a0)
+	sw	s2,0(a1)
+	sw	s3,0(a2)
+	sw	s4,0(a3)
+	sw	s5,0(t6)
+	sw	s6,0(t7)
 	
 
 	lw	$fp,92(sp)
