@@ -181,15 +181,19 @@ ASIGNACIONTEMPORAL:
 	addu 	t0,t0,t4		#t0 = t0 + f + e + k + trozos[i]
 	
 	sw	t0,76($fp)		#guardo t0 en temp (76($fp))
-	sw	s5,0(s6)		#e = d;
-	sw	s4,0(s5)		#d = c;
+	#sw	s5,0(s6)		#e = d;
+	move s6,s5
+	#sw	s4,0(s5)		#d = c;
+	move s5,s4
 	rol	s4,s3,30		#c = leftrotate(b ,30);
-	sw	s2,0(s3)		#b = a;
-	sw	t0,0(s2)		#a = temp;
+	#sw	s2,0(s3)		#b = a;
+	move s3,s2
+	#sw	t0,0(s2)		#a = temp;
+	move s2,t0
 
 	#AUMENTO I
-	addiu 	t1,t1,1			#i = i + 1
-	sw 	t1,64($fp)		#guardo
+	#addiu 	t1,t1,1			#i = i + 1
+	#sw 	t1,64($fp)		#guardo
 	
 	jalr 	ra
 
