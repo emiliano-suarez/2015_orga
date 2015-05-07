@@ -14,10 +14,9 @@ char* setFileSize(FILE* fp, long long int *length);
 long long int calcularRelleno(long long int longitudOriginal);
 void cargarTrozos(char *bloque,unsigned int *Trozos);
 void algoritmoSha1(unsigned int *Trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e);
-// int sha1(char *result, char *bytes, unsigned long length);
+
 int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
 unsigned int leftrotate(unsigned int valor,int desplazamiento);
-long long int calcularTamanioArchivo(char* nombreFile); //devuelve el tamanio en bits
 void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno);
 
 int main(int argc, char* argv[]) {
@@ -59,7 +58,10 @@ int main(int argc, char* argv[]) {
         }
         
         start = setFileSize(fp, &length);
-        sha1(result, files[i], length);
+	long long int longitudRelleno = calcularRelleno(length);
+	char *bloques = malloc(longitudRelleno/8);
+        asignarDatos(files[i],bloques,length,longitudRelleno); // se almacena el tamanioOrginal al final
+        sha1(result,bloques, length);
 //        sha1(result, start, length);
     }
 
@@ -111,93 +113,64 @@ void printHelp()
     fprintf(stdout, "  echo \"hello\" | tp1\n\n");
 }
 
-long long int calcularRelleno(long long int longitudOriginal)
+int sha1(unsigned char *resultado, char *bloques, unsigned long long longitudOriginal)
 {
-	unsigned long long int longitudRelleno;
-        longitudRelleno = longitudOriginal;
+	long long int longitudRelleno = calcularRelleno(longitudOriginal);
+        //prepocesamiento
+        long long int cantBloques = longitudRelleno/512; //longArchivo/tamanio bloque   bloque = 512bits
 
-        //incorporacion de bits de relleno 0..512 bits
-        while ((longitudRelleno % 512 )!= 0)
+        ////procesar el bloque en 4 rondas de 20 pasos cada ronda
+        //la memoria temporal cuenta con 5 regstros ABCDE
+        unsigned  A=0x67452301;
+        unsigned  B=0xEFCDAB89;
+        unsigned  C=0x98BADCFE;
+        unsigned  D=0x10325476;
+        unsigned  E=0xC3D2E1F0;
+
+        //unsigned int trozos[80]; //big endian
+	unsigned int *trozos = malloc(80*sizeof(int));
+
+       // int indice = 0;
+        int i;
+        unsigned a = 0;
+        unsigned b = 0;
+        unsigned c = 0;
+        unsigned d = 0;
+        unsigned e = 0;
+
+        while(cantBloques--)
         {
-            longitudRelleno++;
+		cargarTrozos(bloques, trozos);
+
+                a = A;
+                b = B;
+                c = C;
+                d = D;
+                e = E;
+
+		algoritmoSha1(trozos,&a,&b,&c,&d,&e);
+
+           	A += a;
+          	B += b;
+           	C += c;
+           	D += d;
+            	E += e;
+
         }
 
-        if((longitudRelleno-longitudOriginal) < 65) //si hay al menos 65 bits agregamos 512 mas
+        // hh = (h0 leftshift 128) or (h1 leftshift 96) or (h2 leftshift 64) or (h3 leftshift 32) or h4
+        for(i = 0;i<4;i++)
         {
-            longitudRelleno +=512;
+                resultado[i]    = (A>>(24-8*i));
+                resultado[i+4]  = (B>>(24-8*i));
+                resultado[i+8]  = (C>>(24-8*i));
+                resultado[i+12] = (D>>(24-8*i));
+                resultado[i+16] = (E>>(24-8*i));
         }
 
-	return longitudRelleno;
+    return 0;
 }
 
-
-void cargarTrozos(char *bloques,unsigned int *trozos)
-{
-	int i;
-	unsigned mascara = 0x000000FF;
-        for(i=0;i<16;i++)
-        {
-             trozos[i] = (*(bloques++) & mascara);
-             trozos[i]<<=8;
-             trozos[i]|= (*(bloques++) & mascara);
-             trozos[i]<<=8;
-             trozos[i]|= (*(bloques++) & mascara);
-             trozos[i]<<=8;
-             trozos[i]|= (*(bloques++) & mascara);
-        }
-
-        for(i=16;i<80;i++)
-        {
-             trozos[i] = (trozos[i-3] ^ trozos[i-8] ^ trozos[i-14] ^ trozos [i-16]);
-             trozos[i] = leftrotate(trozos[i],1);
-        }
-
-}
-
-
-void algoritmoSha1(unsigned int *trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e)
-{
-
-int i;
-unsigned int k;
-unsigned int f;
-unsigned int temp;
-
-	for(i=0;i<80;i++)
-        {
-		if(i<=19) //0 ≤ i ≤ 19
-		{
-		    f = (*b & *c) ^ ((~*b) & *d);
-		    k = 0x5A827999;
-		}
-		else
-		    if( (i>=20)&&(i<=39))//20 ≤ i ≤ 39
-		    {
-			f = *b ^ *c ^ *d;
-			k = 0x6ED9EBA1;
-		    }
-		    else
-			if( (i>=40)&&(i<=59))//40 ≤ i ≤ 59
-			{
-			    f = (*b & *c) | (*b & *d) | (*c & *d);
-			    k = 0x8F1BBCDC;
-			}
-			else
-			    if( (i>=60)&&(i<=79))//60 ≤ i ≤ 79
-			    {
-				f = *b ^ *c ^ *d;
-				k = 0xCA62C1D6;
-			    }
-
-		temp = leftrotate (*a,5);
-		temp = temp + f + *e + k + trozos[i];
-		*e = *d;
-		*d = *c;
-		*c = leftrotate(*b ,30);
-		*b = *a;
-		*a = temp;
-	}
-}
 
 //un bloque tiene 64 bytes
 void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno)

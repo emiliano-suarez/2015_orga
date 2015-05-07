@@ -17,34 +17,33 @@ cargarTrozos:
 	.set noreorder
 	.cpload t9
 	.set reorder
-	.cprestore 24
+	subu 	sp, sp, 40
+	.cprestore 0	
 	
-	subu 	sp, sp, 104	
-	
-	sw 	gp,88(sp)
-	sw 	$fp,92(sp)
-	sw	ra,96(sp)
+	sw 	gp,24(sp)
+	sw 	$fp,28(sp)
+	sw	ra,32(sp)
 	move	$fp, sp
 	
 	#guardo los parametros con que vine #void cargarTrozos(char *bloques,int *indice,unsigned int *trozos)
 	
-	sw 	a0, 104($fp) 	#ptero a bloques
-	sw 	a1, 108($fp) 	# ptero a trozos
-	sw 	a2, 112($fp) 	# nada
-	sw 	a3, 116($fp)	# nada
+	sw 	a0, 40($fp) 	#ptero a bloques
+	sw 	a1, 44($fp) 	# ptero a trozos
+	sw 	a2, 48($fp) 	# nada
+	sw 	a3, 52($fp)	# nada
 	
 	#cargo los parametros
 	move	s0,a0
 	move	s1,a1
 
-	sw	zero,64($fp) 		# i=0
+	sw	zero,16($fp) 		# i=0
 	li	t0,255			# mascara 0x000000ff
-	sw	t0,80($fp)		#mascara en 88
+	sw	t0,20($fp)		#mascara en 28
 
 FOR16PRIMEROS:
 	#traigo los datos
-	lw	t0,64($fp)		#t0 cargo i
-	lw 	t5,80($fp)		#t5 = mascara
+	lw	t0,16($fp)		#t0 cargo i
+	lw 	t5,20($fp)		#t5 = mascara
 	
 	#comienzo
 	
@@ -76,7 +75,7 @@ FOR16PRIMEROS:
 	
 
 	addiu 	t0,t0,1			#i = i + 1
-	sw 	t0,64($fp)		#guardo
+	sw 	t0,16($fp)		#guardo
 
 	addiu 	s1,s1,4			# avanzo a la sig palabra
 	addiu 	s0,s0,1			# avanzo al sig byte
@@ -89,7 +88,7 @@ FOR16PRIMEROS:
 
 FOR16TO80:
 	#traigo los datos
-	lw	t0,64($fp)		#t0 cargo i
+	lw	t0,16($fp)		#t0 cargo i
 	
 	addiu 	s1,s1,-12		#t3 apunta a trozos(i - 3).. 3 lugares = 4bytesx3 = 12 bytes  
 	lw	t4,0(s1)		#t4 traigo la palabra a la q apunta t3
@@ -118,7 +117,7 @@ FOR16TO80:
 	sw 	t4,0(s1)		#guardo t4 en t2 = trozos + i*4 es decir apunta a trozos[i]
 	
 	addiu	t0,t0,1			#i = i + 1
-	sw 	t0,64($fp)		#guardo
+	sw 	t0,16($fp)		#guardo
 	addiu	s1,s1,4			#t2 = avanzo a la siguiente palabra
 
 	addiu	t7,t0,-80
@@ -128,10 +127,10 @@ FOR16TO80:
 
 FinDelFor:
 
-	lw	$fp,92(sp)
-	lw	ra, 96(sp)
-	lw	gp, 88(sp)
-	addu	sp, sp, 104
+	lw	$fp,28(sp)
+	lw	ra, 32(sp)
+	lw	gp, 24(sp)
+	addu	sp, sp, 40
 
 	# Retorno.
 	#
