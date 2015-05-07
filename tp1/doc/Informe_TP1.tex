@@ -109,7 +109,10 @@ Para compilar el programa se debe abrir una terminal en la carpeta donde están a
 Para generar el ejecutable \textsl{sha}.
 
 \subsection{Arquitectura}
-El trabajo está dividido en los siguientes archivos:
+
+En una primera versión se trabajo con una función \textsl{sha} íntegramente desarrollada en \textsl{Assembly}, con un stack mas grande. Pero tuvimos problemas con el \textsl{malloc} al intentar reservar memoria para los bloques a procesar por el algoritmo. Como una alternativa, probamos utilizar la función \textsl{malloc} de \textsl{C} desde \textsl{Assembly}, realizando \textsl{syscall} e incluso, utilizando la versión en \textsl{Assembly} de \textsl{mymalloc.S} que se encuentra en el grupo.
+
+Con ninguna de estas opciones lograr que la función \textsl{sha} funcionara correctamente, por lo que decidimos modularizarla de la siguiente manera.
 
 \begin{description}
   \item[main.c] \hfill \\
@@ -232,9 +235,20 @@ de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3
 
 El presente trabajo permitió la familiarización con las herramientas de compilación de código C y código assembly en un entorno que emula la arquitectura MIPS 32, asegurando la portabilidad del programa.
 
+Además nos permitió conocer en detalle como se comporta el stack de una función en la programación en \textsl{Assembly}.
+Para esto último, fue de gran ayuda conocer previamente la implementación de las funciones en lenguage C, para luego hacer la ``traducción'' a \textsl{Assembly} teniendo en cuenta la cantidad de argumentos, variables locales, tamaño de los datos, etc.
+
 \newpage
 \section{Apéndice}
 \subsection{Código Fuente: main.c}
 \lstinputlisting{../src/main.c}
 
+\subsection{Código Fuente: relleno.S}
+\lstinputlisting{../src/relleno.S}
+
+\subsection{Código Fuente: trozo.S}
+\lstinputlisting{../src/trozo.S}
+
+\subsection{Código Fuente: algoritmo.S}
+\lstinputlisting{../src/algoritmo.S}
 \end{document}
