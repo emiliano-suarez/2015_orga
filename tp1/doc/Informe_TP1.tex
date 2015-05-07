@@ -1,7 +1,6 @@
 \documentclass[a4paper,10pt]{article}
 
 \usepackage{graphicx}
-\graphicspath{ {images/} }
 \usepackage[ansinew]{inputenc}
 \usepackage[spanish]{babel}
 \usepackage{listings}
@@ -45,87 +44,98 @@
   rulesepcolor=\color{blue}
 }
 
-\title{     \textbf{Trabajo Pr√°ctico 1: \\ Conjunto de instrucciones MIPS}}
+\title{     \textbf{Trabajo Pr·ctico 1: \\ Conjunto de instrucciones MIPS}}
 
 \author{
-            Jimenez, Ruben, \textit{Padr√≥n Nro. 92.402}                            \\
+            Jimenez, Ruben, \textit{PadrÛn Nro. 92.402}                            \\
             \texttt{ rbnm.jimenez@gmail.com }                                   \\[2.5ex]
-            Reyero, Felix, \textit{Padr√≥n Nro. 92.979}                             \\
+            Reyero, Felix, \textit{PadrÛn Nro. 92.979}                             \\
             \texttt{ felixcarp@gmail.com }                                    \\[2.5ex]
-            Su√°rez, Emiliano, \textit{Padr√≥n Nro. 78.372}                             \\
+            Su·rez, Emiliano, \textit{PadrÛn Nro. 78.372}                             \\
             \texttt{ emilianosuarez@gmail.com }                                    \\[2.5ex]
     Primera Entrega: \textit{30/04/2015}                                            \\[1.5ex]
             \normalsize{1er. Cuatrimestre de 2015}                                  \\
-            \normalsize{66.20 Organizaci√≥n de Computadoras  $-$ Pr√°ctica Jueves}    \\
-            \normalsize{Facultad de Ingenier√≠a, Universidad de Buenos Aires}        \\
+            \normalsize{66.20 OrganizaciÛn de Computadoras  $-$ Pr·ctica Jueves}    \\
+            \normalsize{Facultad de IngenierÌa, Universidad de Buenos Aires}        \\
        }
 \date{}
 
 \begin{document}
 
 \maketitle
-\thispagestyle{empty}   % quita el n√∫mero en la primer p√°gina
+\thispagestyle{empty}   % quita el n˙mero en la primer p·gina
 
 \newpage
 \begin{abstract}
-Se implement√≥ una versi√≥n simplificada del programa \textbf{sha1} de UNIX. Para nuestra implementaci√≥n.
+Se implementÛ una versiÛn simplificada del programa \textbf{sha1} de UNIX. Para nuestra implementaciÛn.
 \end{abstract}
 
-\section{Introducci√≥n}
+\section{IntroducciÛn}
 
-Este Trabajo Pr√°ctico pretende familiarizarse con la programaci√≥n en assembly y el concepto de ABI.
+Este Trabajo Pr·ctico pretende familiarizarse con la programaciÛn en assembly y el concepto de ABI.
 
-Para ello, implementaremos el algoritmo \textbf{sha1} de UNIX en c√≥digo \textsl{Assembly}, mientras que la interpretaci√≥n de argumentos del programa y la lectura de archivos ser√° realizada en lenguaje \textsl{C}.
+Para ello, implementaremos el algoritmo \textbf{sha1} de UNIX en cÛdigo \textsl{Assembly}, mientras que la interpretaciÛn de argumentos del programa y la lectura de archivos ser· realizada en lenguaje \textsl{C}.
 
-Adem√°s, se utilizar√° \textsl{GXemul} para simular una m√°quina \textsl{MIPS} corriendo una versi√≥n reciente del sistema operativo \textsl{NetBSD}.
+Adem·s, se utilizar· \textsl{GXemul} para simular una m·quina \textsl{MIPS} corriendo una versiÛn reciente del sistema operativo \textsl{NetBSD}.
 
-El programa implementado, muestra por \textsl{stdout} un checksum generado a partir del contenido de los archivos archivos pasados por par√°metro. En caso de no especificarse alg√∫n archivo, se mostrar√°n un checksum a partir de lo ingresado por \textsl{stdin}.
+El programa implementado, muestra por \textsl{stdout} un checksum generado a partir del contenido de los archivos archivos pasados por par·metro. En caso de no especificarse alg˙n archivo, se mostrar·n un checksum a partir de lo ingresado por \textsl{stdin}.
 
 \newpage
-\section{Dise√±o e Implementaci√≥n}
+\section{DiseÒo e ImplementaciÛn}
 
-Se implement√≥ un programa que realiza la lectura a trav√©s del stdin o a trav√©s de archivos que se reciben por par√°metro.
+Se implementÛ un programa que realiza la lectura a travÈs del stdin o a travÈs de archivos que se reciben por par·metro.
 
-El comando acepta 2 par√°metros para mostrar la Ayuda y la Versi√≥n del programa:
+El comando acepta 2 par·metros para mostrar la Ayuda y la VersiÛn del programa:
 \begin{verbatim}
-$ ./tp1 -h
-$ ./tp1 --help
+$ ./sha -h
+$ ./sha --help
 \end{verbatim}
 Para desplegar la ayuda del comando.
-Y los siguientes comandos para mostrar la versi√≥n:
+Y los siguientes comandos para mostrar la versiÛn:
 \begin{verbatim}
-$ ./tp1 -V
-$ ./tp1 --version
+$ ./sha -V
+$ ./sha --version
 \end{verbatim}
 
-Inicialmente el programa revisa la cadena de parametros ingresada y determina si el checksum debe generarse a partir de lo ingresado por \textsl{stdin} o a trav√©s del contenido del (o los) archivo(s).
+Inicialmente el programa revisa la cadena de parametros ingresada y determina si el checksum debe generarse a partir de lo ingresado por \textsl{stdin} o a travÈs del contenido del (o los) archivo(s).
 
-Para este √∫ltima opci√≥n, se procesan los archivo de uno por vez, y para cada uno de ellos se genera el checksum a partir de sus datos.
+Para este ˙ltima opciÛn, se procesan los archivo de uno por vez, y para cada uno de ellos se genera el checksum a partir de sus datos.
 
-Las funciones \textsl{sha1} y \textsl{cargarTrozos} (llamada desde la primer funci√≥n mencionada), fueron implementadas en leguanje \textsl{Assembly}. Cada una de ellas con su corresponientes stack que puede observase a continuaci√≥n:
+\subsection{CompilaciÛn}
+Para compilar el programa se debe abrir una terminal en la carpeta donde est·n alojados los archivos fuentes (\textsl{src/}) y se ejecuta el siguiente comando:
+\begin{verbatim}
+../src$ gcc -g -O0 -Wall main.c algoritmo.S trozo.S relleno.S -o sha
+../src$ gcc -g -O0 -Wall main.c algoritmo.S trozo.S relleno.S -o sha # borrar esta linea
+\end{verbatim}
+Para generar el ejecutable \textsl{sha}.
+
+\subsection{Arquitectura}
+El trabajo est· dividido en los siguientes archivos:
+
+\begin{description}
+  \item[main.c] \hfill \\
+  Cuerpo principal del programa, donde se realiza la lectura de los par·metros de los archivos.
+  \item[relleno.S] \hfill \\
+  Donde se encuentra la implementaciÛn en \textsl{Assembly} de la funciÛn \textsl{calcularRelleno}.
+  \item[trozo.S] \hfill \\
+  Donde se encuentra la implementaciÛn en \textsl{Assembly} de la funciÛn \textsl{cargarTrozos}.
+  \item[algoritmo.S] \hfill \\
+  Donde se encuentra la implementaciÛn en \textsl{Assembly} de la funciÛn \textsl{algoritmoSha1}.\hfill \\
+\end{description}
+
+Las funciones \textsl{calcularRelleno}, \textsl{cargarTrozos} y \textsl{algoritmoSha1}, son llamadas desde la funciÛn \textsl{sha1} de \textsl{main.c}.
+
+Los stacks de cada una de ellas que pueden observase a continuaciÛn:
 
 \begin{center}
     \begin{tabular}{ | p{3cm} | p{3cm}  | }
     \hline
+        \multicolumn{2}{|c|}{calcularRelleno} \\ \hline
         Dir Mem & Valor \\ \hline
-        100 &  \\ \hline
-        96 & ra \\ \hline
-        92 & fp \\ \hline
-        88 & gp \\ \hline
-        84 &  \\ \hline
-        80 & mascara \\ \hline
-        76 & temp \\ \hline
-        72 & k \\ \hline
-        68 & fp \\ \hline
-        64 & i \\ \hline
-        60 & indice \\ \hline
-        56 & E \\ \hline
-        52 & D \\ \hline
-        48 & C \\ \hline
-        44 & B \\ \hline
-        40 & A \\ \hline
-        36 & cantBloques \\ \hline
-        32 & cantBloques \\ \hline
+        44 &  \\ \hline
+        40 & ra \\ \hline
+        36 & fp \\ \hline
+        32 & gp \\ \hline
         28 & longOrig \\ \hline
         24 & longOrig \\ \hline
         20 & longRelleno \\ \hline
@@ -141,7 +151,47 @@ Las funciones \textsl{sha1} y \textsl{cargarTrozos} (llamada desde la primer fun
 \begin{center}
     \begin{tabular}{ | p{3cm} | p{3cm}  | }
     \hline
+        \multicolumn{2}{|c|}{cargarTrozos} \\ \hline
         Dir Mem & Valor \\ \hline
+        36 &  \\ \hline
+        32 & ra \\ \hline
+        28 & fp \\ \hline
+        24 & gp \\ \hline
+        20 & mascara \\ \hline
+        16 & i \\ \hline
+        12 & a3 \\ \hline
+        8 & a2 \\ \hline
+        4 & a1 \\ \hline
+        0 & a0 \\ \hline
+        \hline
+    \end{tabular}
+\end{center}
+
+\begin{center}
+    \begin{tabular}{ | p{3cm} | p{3cm}  | }
+    \hline
+        \multicolumn{2}{|c|}{algoritmoSha1} \\ \hline
+        Dir Mem & Valor \\ \hline
+        44 &  \\ \hline
+        40 & ra \\ \hline
+        36 & fp \\ \hline
+        32 & gp \\ \hline
+        28 &  \\ \hline
+        24 & temp \\ \hline
+        20 & k \\ \hline
+        16 & i \\ \hline
+        12 & a3 \\ \hline
+        8 & a2 \\ \hline
+        4 & a1 \\ \hline
+        0 & a0 \\ \hline
+        \hline
+    \end{tabular}
+\end{center}
+
+\begin{center}
+    \begin{tabular}{ | p{3cm} | p{3cm}  | }
+    \hline
+        Registro & Valor \\ \hline
         s0 & bloques \\ \hline
         s1 & trozos \\ \hline
         s2 & a \\ \hline
@@ -153,45 +203,39 @@ Las funciones \textsl{sha1} y \textsl{cargarTrozos} (llamada desde la primer fun
     \end{tabular}
 \end{center}
 
-COMPLETAR CON ALGO MAS SOBRE LA ARQUITECTURA.
-
-Para compilar el programa se debe abrir una terminal en la carpeta donde est√°n alojados los archivos fuentes (\textsl{src/}) y se ejecuta el siguiente comando:
-\begin{verbatim}
-../src$ make
-\end{verbatim}
-Para generar el ejecutable \textsl{tp1}.\\
-\\
-\textbf{make}: se encargara de compilar los archivos generando el ejecutable.
-
-El \textsl{Makefile} puede observarse a continuaci√≥n:\\
-\lstinputlisting{../src/Makefile}
-
-La compilaci√≥n del programa en NetBSD (asegurando la portabilidad), puede observarse en la figura~\ref{fig006} del Ap√©ndice.
-
-\newpage
 \section{Casos de Prueba}
-Se realizaron distintas pruebas:
+Algunos de los casos de pruebas realizados, pueden observarse a continuaciÛn:
 
-COMPLETAR CON ALGUNAS PRUEBAS.
+\begin{verbatim}
+root@:/home/gxemul/tprub/div# sha1 hola
+SHA1 (hola) = ef443fee4da6bfb41651930de7ad99f29ed9f079
+root@:/home/gxemul/tprub/div# ./sha hola
+ef443fee4da6bfb41651930de7ad99f29ed9f079
+
+root@:/home/gxemul/tprub/div# sha1 vacio
+SHA1 (vacio) = da39a3ee5e6b4b0d3255bfef95601890afd80709
+root@:/home/gxemul/tprub/div# ./sha vacio
+da39a3ee5e6b4b0d3255bfef95601890afd80709
+
+root@:/home/gxemul/tprub/div# sha1 prueba-dog
+SHA1 (prueba-dog) = 2fd4e1c67a2d28fced849ee1bb76e7391b93eb12
+root@:/home/gxemul/tprub/div# ./sha prueba-dog
+2fd4e1c67a2d28fced849ee1bb76e7391b93eb12
+
+root@:/home/gxemul/tprub/div# sha1 prueba-cog
+SHA1 (prueba-cog) = de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3
+root@:/home/gxemul/tprub/div# ./sha prueba-cog
+de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3
+\end{verbatim}
 
 \newpage
 \section{Conclusiones}
 
-El presente trabajo permiti√≥ la familiarizaci√≥n con las herramientas de compilaci√≥n de c√≥digo C y c√≥digo assembly en un entorno que emula la arquitectura MIPS 32, asegurando la portabilidad del programa.
+El presente trabajo permitiÛ la familiarizaciÛn con las herramientas de compilaciÛn de cÛdigo C y cÛdigo assembly en un entorno que emula la arquitectura MIPS 32, asegurando la portabilidad del programa.
 
 \newpage
-\section{Ap√©ndice}
-\subsection{Compilaci√≥n en NetBSD}
-
-% Inclusi√≥n de una imagen
-\begin{figure}[!htp]
-\begin{center}
-\includegraphics[width=0.7\textwidth]{test_00_compilacionGxemul}
-\end{center}
-\caption{Compilaci√≥n NetBSD} \label{fig006}
-\end{figure}
-
-\subsection{C√≥digo Fuente: tp1.c}
-\lstinputlisting{../src/tp1.c}
+\section{ApÈndice}
+\subsection{CÛdigo Fuente: main.c}
+\lstinputlisting{../src/main.c}
 
 \end{document}
