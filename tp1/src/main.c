@@ -11,13 +11,16 @@ void printVersion();
 void printError(char* msgError, int codeError);
 char* setFileSize(FILE* fp, long long int *length);
 
+int readFromStdInput(int argumentCount);
+
 long long int calcularRelleno(long long int longitudOriginal);
 void cargarTrozos(char *bloque,unsigned int *Trozos);
 void algoritmoSha1(unsigned int *Trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e);
 
 int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
 unsigned int leftrotate(unsigned int valor,int desplazamiento);
-void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno);
+void asignarDatos(FILE* fp,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno);
+void showCheckSum(unsigned char *result);
 
 int main(int argc, char* argv[]) {
     int i = 0;
@@ -29,8 +32,27 @@ int main(int argc, char* argv[]) {
     char *start;
     long long int length;
 
-    // Parse arguments
-    if (argc >= 2) {
+    if (readFromStdInput(argc)) {
+        int c;
+
+        fp = fopen("archivoAuxiliar.txt", "w+");
+        while ((c = fgetc(stdin)) != EOF) {
+            fputc(c, fp);
+        };
+
+        start = setFileSize(fp, &length);
+        long long int longitudRelleno = calcularRelleno(length);
+        char *bloques = malloc(longitudRelleno/8);
+        asignarDatos(fp,bloques,length,longitudRelleno); // se almacena el tamanioOrginal al final
+        sha1(result,bloques, length);
+        showCheckSum(result);
+
+        fclose (fp);
+        remove("archivoAuxiliar.txt");
+
+        return 0;
+
+    } else if (argc >= 2) {    // Parse arguments
         param = *(argv + 1);
         if ((strcmp(param, "-h") == 0) || (strcmp(param, "--help") == 0) ) {
             printHelp();
@@ -59,18 +81,13 @@ int main(int argc, char* argv[]) {
         start = setFileSize(fp, &length);
         long long int longitudRelleno = calcularRelleno(length);
         char *bloques = malloc(longitudRelleno/8);
-        asignarDatos(files[i],bloques,length,longitudRelleno); // se almacena el tamanioOrginal al final
+        
+        fp = fopen(files[i],"r");
+        asignarDatos(fp,bloques,length,longitudRelleno); // se almacena el tamanioOrginal al final
         sha1(result,bloques, length);
     }
 
-    for(i = 0; i < 20; i++) {
-        unsigned char aux = result[i];
-        aux<<=4;
-        aux>>=4;
-        printf("%x",(result[i]>>4));
-        printf("%x",aux);
-    }
-    printf("\n");
+    showCheckSum(result);
 
     return 0;
 }
@@ -171,9 +188,10 @@ int sha1(unsigned char *resultado, char *bloques, unsigned long long longitudOri
 
 
 //un bloque tiene 64 bytes
-void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno)
+void asignarDatos(FILE *fp, unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno)
 {
-    FILE *fp = fopen(file,"r");
+    // FILE *fp = fopen(file,"r");
+
     char caracter;
     int indice =0;
     int i =0;
@@ -236,4 +254,20 @@ void printError(char* msgError, int codeError)
 {
     fprintf(stderr, "%s\n", msgError);
     exit(codeError);
+}
+
+void showCheckSum(unsigned char *result) {
+    int i;
+    for(i = 0; i < 20; i++) {
+        unsigned char aux = result[i];
+        aux<<=4;
+        aux>>=4;
+        printf("%x",(result[i]>>4));
+        printf("%x",aux);
+    }
+    printf("\n");
+}
+
+int readFromStdInput(int argumentCount) {
+    return (int)(argumentCount < 2);
 }
