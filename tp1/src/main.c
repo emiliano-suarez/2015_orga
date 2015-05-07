@@ -14,8 +14,13 @@ char* setFileSize(FILE* fp, long long int *length);
 long long int calcularRelleno(long long int longitudOriginal);
 void cargarTrozos(char *bloque,unsigned int *Trozos);
 void algoritmoSha1(unsigned int *Trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e);
+<<<<<<< HEAD:tp1/src/main.c
 
 int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
+=======
+// int sha1(char *result, char *bytes, unsigned long length);
+extern int sha1(unsigned char *resultado, char *nombre_archivo, unsigned long long longitudOriginal);
+>>>>>>> 480eb63546e76c3386ef241c2cb64553e14d78d8:tp1/src/tp1.c
 unsigned int leftrotate(unsigned int valor,int desplazamiento);
 void asignarDatos(char *file,unsigned char *bloques,long long int tamanioOriginal, long long int longitudRelleno);
 
