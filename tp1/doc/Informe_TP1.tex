@@ -4,6 +4,7 @@
 \usepackage[ansinew]{inputenc}
 \usepackage[spanish]{babel}
 \usepackage{listings}
+\usepackage{url}
 \usepackage{color}
 \usepackage{framed}
 \usepackage{graphicx}
@@ -81,32 +82,7 @@ Además, se utilizará \textsl{GXemul} para simular una máquina \textsl{MIPS} corr
 El programa implementado, muestra por \textsl{stdout} un checksum generado a partir del contenido de los archivos archivos pasados por parámetro. En caso de no especificarse algún archivo, se mostrarán un checksum a partir de lo ingresado por \textsl{stdin}.
 
 \newpage
-\section{Diseño e Implementación}
-
-Se implementó un programa que realiza la lectura a través del stdin o a través de archivos que se reciben por parámetro.
-
-El comando acepta 2 parámetros para mostrar la Ayuda y la Versión del programa:
-\begin{verbatim}
-$ ./sha -h
-$ ./sha --help
-\end{verbatim}
-Para desplegar la ayuda del comando.
-Y los siguientes comandos para mostrar la versión:
-\begin{verbatim}
-$ ./sha -V
-$ ./sha --version
-\end{verbatim}
-
-Inicialmente el programa revisa la cadena de parametros ingresada y determina si el checksum debe generarse a partir de lo ingresado por \textsl{stdin} o a través del contenido del (o los) archivo(s).
-
-Para este última opción, se procesan los archivo de uno por vez, y para cada uno de ellos se genera el checksum a partir de sus datos.
-
-\subsection{Compilación}
-Para compilar el programa se debe abrir una terminal en la carpeta donde están alojados los archivos fuentes (\textsl{src/}) y se ejecuta el siguiente comando:
-\begin{verbatim}
-../src$ gcc -g -O0 -Wall main.c algoritmo.S trozo.S relleno.S -o sha
-\end{verbatim}
-Para generar el ejecutable \textsl{sha}.
+\section{Implementación}
 
 \subsection{Arquitectura}
 
@@ -116,13 +92,35 @@ Con ninguna de estas opciones lograr que la función \textsl{sha} funcionara corr
 
 \begin{description}
   \item[main.c] \hfill \\
-  Cuerpo principal del programa, donde se realiza la lectura de los parámetros de los archivos.
+    Cuerpo principal del programa, donde se realiza la lectura de los parámetros de los archivos.
+
+    Cada uno de estos archivos, es guardado en memoría dinámica con un tamaño máximo de 1000 bytes (utilizando \textsl{malloc}). En caso que el tamaño del archivo supere dicho tamaño, se reasigna memoria dínamica mediante la utilización de \textsl{realloc}, para disponer un bloque de memoria done quepa el archivo (bloque de igual tamaño al tamaño del archivo).
+  
   \item[relleno.S] \hfill \\
-  Donde se encuentra la implementación en \textsl{Assembly} de la función \textsl{calcularRelleno}.
+    Donde se encuentra la implementación en \textsl{Assembly} de la función \textsl{calcularRelleno}.
+
+    Dicha función cuenta con un stack donde se alacena la longitud original así como la longitudRelleno que es la longitud que incluye el relleno para poder determinar la cantidad de bloques finales a procesar.
+    
+    También se almacena en el stack la variable cantBloques que determina la cantidad de bloques a procesar.
+
+    La dificultad de este método fue la de tratar longitudes que ocupan 64 bits, para ello se tuvo que manejar dos registros uno que tenga los 32 bits mas significativos y otro para los 32 restantes,usando el carry que produce la suma de la parte menos significativa para actualizar la parte mas significativa de la longitud final.
+
   \item[trozo.S] \hfill \\
-  Donde se encuentra la implementación en \textsl{Assembly} de la función \textsl{cargarTrozos}.
+    Donde se encuentra la implementación en \textsl{Assembly} de la función \textsl{cargarTrozos}.
+
+    Dicha función, además de los registros obligatorios, contiene en su stack dos ``saved registers'' s0 y s1 que almacenan los punteros hacia los vectores ``trozos'' y ``bloques'' y los registros para almacenar las variables ``i'' y ``mascara''. En el cuerpo de la función se hace uso de los 8 registros temporales para distintas asignaciones necesarias.
+
+    Luego de guardar los parámetros con los que viene la función, inicializar ``i'' y cargar la ``mascara'' a un temporal, genera las 16 primeras palabras del vector de 80, trayendo byte a byte desde ``bloques'' y generando con operaciones lógicas (and, or) y movimientos (sll) el word final que se guarda en ``trozos''.
+
+    Luego desde la posicion 16 hasta la 80 con operaciones lógicas  y rotaciones (xor y rol)  se genera el resto del contenido del vector operando con los 16 words anteriores.
+
   \item[algoritmo.S] \hfill \\
-  Donde se encuentra la implementación en \textsl{Assembly} de la función \textsl{algoritmoSha1}.\hfill \\
+    Donde se encuentra la implementación en \textsl{Assembly} de la función \textsl{algoritmoSha1}.
+
+    Dicha función, además de los registros obligatorios, contiene en su stack seis ``saved registers'' s2..s7 que almacenan los punteros hacia los valores de ``a,,b,c,d,e,f'' y los registros para almacenar las variables ``i'',  ``k'' y ``temp''. En el cuerpo de la función se hace uso de los 8 registros temporales para distintas asignaciones necesarias.
+
+    Luego de guardar los parámetros con los que viene la función e inicializar ``i'' , se generan 4 ramas distintas de condicionales con procesos distintos (dependiendo el valor de ``i'' en el for) donde a través de operaciones lógicas (and, not, xor, or) generan un valor que se almacena en ``f'' y se carga una constante ``k'' determinada para que luego se terminen de generar los valores que devuelve la función y se asignen a sus respectivas variables.\hfill \\
+
 \end{description}
 
 Las funciones \textsl{calcularRelleno}, \textsl{cargarTrozos} y \textsl{algoritmoSha1}, son llamadas desde la función \textsl{sha1} de \textsl{main.c}.
@@ -134,10 +132,11 @@ Los stacks de cada una de ellas que pueden observase a continuación:
     \hline
         \multicolumn{2}{|c|}{calcularRelleno} \\ \hline
         Dir Mem & Valor \\ \hline
-        44 &  \\ \hline
-        40 & ra \\ \hline
-        36 & fp \\ \hline
-        32 & gp \\ \hline
+        48 &  \\ \hline
+        44 & ra \\ \hline
+        40 & fp \\ \hline
+        36 & gp \\ \hline
+        32 &  \\ \hline
         28 & longOrig \\ \hline
         24 & longOrig \\ \hline
         20 & longRelleno \\ \hline
@@ -205,6 +204,45 @@ Los stacks de cada una de ellas que pueden observase a continuación:
     \end{tabular}
 \end{center}
 
+\subsection{Diseño}
+
+Se desarrollo un programa que realiza la lectura a través del stdin o a través de archivos que se reciben por parámetro.
+
+El comando acepta 2 parámetros para mostrar la Ayuda y la Versión del programa:
+\begin{verbatim}
+$ ./sha -h
+$ ./sha --help
+\end{verbatim}
+Para desplegar la ayuda del comando.
+Y los siguientes comandos para mostrar la versión:
+\begin{verbatim}
+$ ./sha -V
+$ ./sha --version
+\end{verbatim}
+
+Inicialmente el programa revisa la cadena de parametros ingresada y determina si el checksum debe generarse a partir de lo ingresado por \textsl{stdin} o a través del contenido del (o los) archivo(s).
+
+Para este última opción, se procesan los archivo de uno por vez, y para cada uno de ellos se genera el checksum a partir de sus datos.
+
+Primero se obtiene el largo total del archivo, luego se llama a la función calcularRelleno, donde se obtiene una longitudRelleno que dividida por 8 determina la longitud del vector que se asigna en memoria dinámica para trabajar con el archivo completo.
+
+Para completar el archivo, se llama a la función de C ``asignarDatos'' la cual se encarga de completar el vector anteriormente pedido con las características correspondientes que pide el preprocesamiento del algoritmo sha1 (a saber: el relleno consiste en un uno seguido de los ceros que sean necesarios, aunque el mensaje ya tenga la longitud deseada se debe efectuar el relleno, por lo que el número de bits de dicho relleno está en el rango de 1 a 512 bits, luego se le añade un bloque de 64 bits que represente la longitud del mensaje original antes de ser rellenado).
+
+Es decir, la totalidad del archivo mas el relleno que lo completa, queda alojado en memoria dinámica. A continuación se procede con la función sha1.
+
+Una vez dentro de la función sha1, se llama a la función ``calcularRelleno'', donde se obtiene una longitudRelleno que, dividida por 512, determina la cantidad de bloques finales a procesar. Se inicializan las variables y por una decisión de diseño se decidió trabajar con un vector de 80 palabras en memoria dinámica porque nos parecía que el stack quedaba muy engorroso para trabajarlo.
+
+Por esta elección, tuvimos problemas con la asignación de memoria dinámica desde assembly por lo cual se dividió (como se menciona en este informe) en partes la función.
+
+A continuación se procede a trabajar con el bloque de datos en un while donde primero se carga el vector de 80 en ``cargarTrozos'' y luego el algoritmo propiamente dicho en ``algoritmosha1'' para finalmente devolver el valor en 160 bits.
+
+\subsection{Compilación}
+Para compilar el programa se debe abrir una terminal en la carpeta donde están alojados los archivos fuentes (\textsl{src/}) y se ejecuta el siguiente comando:
+\begin{verbatim}
+../src$ gcc -g -O0 -Wall main.c algoritmo.S trozo.S relleno.S -o sha
+\end{verbatim}
+Para generar el ejecutable \textsl{sha}.
+
 \section{Casos de Prueba}
 Algunos de los casos de pruebas realizados, pueden observarse a continuación:
 
@@ -251,4 +289,24 @@ Para esto último, fue de gran ayuda conocer previamente la implementación de las
 
 \subsection{Código Fuente: algoritmo.S}
 \lstinputlisting{../src/algoritmo.S}
+
+\subsection{Bibliografía}
+
+\begin{thebibliography}{99}
+\bibitem{USSHA1} \emph{US Secure Hash Algorithm 1 (SHA1)}\\
+\url{http://tools.ietf.org/html/rfc3174}
+
+\bibitem{LSHORT} \emph{SHA1 Message Digest Algorithm Overview}\\
+\url{http://www.herongyang.com/Cryptography/SHA1-Message-Digest-Algorithm-Overview.html}
+
+\bibitem{WIKI_SHA1} \emph{SHA 1}\\
+\url{http://en.wikipedia.org/wiki/SHA-1}
+
+\bibitem{MIPS_ASSEMBLY} \emph{MIPS Assembly Language Guide}\\
+\url{http://www.cs.uni.edu/~fienup/cs041s08/lectures/lec20_MIPS.pdf}
+
+\bibitem{MIPS_INTRUCC} \emph{MIPS Instruction Reference}\\
+\url{http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html}
+\end{thebibliography}
+
 \end{document}

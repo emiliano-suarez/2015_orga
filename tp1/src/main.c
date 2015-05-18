@@ -5,6 +5,7 @@
 #define ERROR_OPEN_FILE 10
 #define MAX_COUNT_FILES 50
 #define HASH_LENGTH 20
+#define MAX_FILE_SIZE 1000
 
 void printHelp();
 void printVersion();
@@ -85,6 +86,7 @@ int main(int argc, char* argv[]) {
         fp = fopen(files[i],"r");
         asignarDatos(fp,bloques,length,longitudRelleno); // se almacena el tamanioOrginal al final
         sha1(result,bloques, length);
+        fclose(fp);
     }
 
     showCheckSum(result);
@@ -98,12 +100,17 @@ char* setFileSize(FILE* fp, long long int *length) {
     int n = 0;
 
     fseek(fp, 0, SEEK_END);
-    *length = ftell(fp)*8;	//devuelve el tamanio en bits
+    *length = ftell(fp);
 
     fseek(fp, 0, SEEK_SET);
 
-    start = malloc(1);
-    start = realloc(start, (*length) );
+    start = malloc(MAX_FILE_SIZE);
+    
+    if ((*length) > MAX_FILE_SIZE) {
+        start = realloc(start, (*length)) );
+    }
+
+    *length *= 8;  // devuelve el tamanio en bits
 
     while ((character = fgetc(fp)) != EOF) {
         start[n++] = (char)character;
@@ -143,7 +150,7 @@ int sha1(unsigned char *resultado, char *bloques, unsigned long long longitudOri
     unsigned  E=0xC3D2E1F0;
 
     //unsigned int trozos[80]; //big endian
-    unsigned int *trozos = malloc(80*sizeof(int));
+    unsigned int trozos[80]; // = malloc(80*sizeof(int));
 
     // int indice = 0;
     int i;
