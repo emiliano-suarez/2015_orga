@@ -279,3 +279,76 @@ void showCheckSum(unsigned char *result) {
 int readFromStdInput(int argumentCount) {
     return (int)(argumentCount < 2);
 }
+
+// Funciones en C, que fueron implementadas en Assembly.
+void cargarTrozos(char *bloques,unsigned int *trozos)
+{
+    int i;
+    unsigned mascara = 0x000000FF;
+    for (i = 0; i < 16; i++) {
+        trozos[i] = (*(bloques++) & mascara);
+        trozos[i]<<=8;
+        trozos[i]|= (*(bloques++) & mascara);
+        trozos[i]<<=8;
+        trozos[i]|= (*(bloques++) & mascara);
+        trozos[i]<<=8;
+        trozos[i]|= (*(bloques++) & mascara);
+    }
+
+    for (i = 16; i < 80; i++) {
+        trozos[i] = (trozos[i-3] ^ trozos[i-8] ^ trozos[i-14] ^ trozos [i-16]);
+        trozos[i] = leftrotate(trozos[i], 1);
+    }
+
+}
+
+long long int calcularRelleno(long long int longitudOriginal)
+{
+    unsigned long long int longitudRelleno;
+    longitudRelleno = longitudOriginal;
+
+    //incorporacion de bits de relleno 0..512 bits
+    while ((longitudRelleno % 512 ) != 0) {
+        longitudRelleno++;
+    }
+
+    // si hay al menos 65 bits agregamos 512 mas
+    if((longitudRelleno - longitudOriginal) < 65)
+    {
+        longitudRelleno +=512;
+    }
+
+    return longitudRelleno;
+}
+
+void algoritmoSha1(unsigned int *trozos,unsigned *a,unsigned *b,unsigned *c,unsigned *d,unsigned *e)
+{
+    int i;
+    unsigned int k;
+    unsigned int f;
+    unsigned int temp;
+
+    for(i = 0; i < 80; i++) {
+        if(i <= 19) {
+            f = (*b & *c) ^ ((~*b) & *d);
+            k = 0x5A827999;
+        } else if ((i >= 20) && ( i <= 39)) {
+            f = *b ^ *c ^ *d;
+            k = 0x6ED9EBA1;
+        } else if ((i >= 40) && ( i<= 59)) {
+            f = (*b & *c) | (*b & *d) | (*c & *d);
+            k = 0x8F1BBCDC;
+        } else if ((i >= 60) && ( i<= 79)) {
+            f = *b ^ *c ^ *d;
+            k = 0xCA62C1D6;
+        }
+
+        temp = leftrotate (*a,5);
+        temp = temp + f + *e + k + trozos[i];
+        *e = *d;
+        *d = *c;
+        *c = leftrotate(*b ,30);
+        *b = *a;
+        *a = temp;
+    }
+}
