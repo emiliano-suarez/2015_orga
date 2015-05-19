@@ -237,11 +237,29 @@ Por esta elección, tuvimos problemas con la asignación de memoria dinámica desde
 A continuación se procede a trabajar con el bloque de datos en un while donde primero se carga el vector de 80 en ``cargarTrozos'' y luego el algoritmo propiamente dicho en ``algoritmosha1'' para finalmente devolver el valor en 160 bits.
 
 \subsection{Compilación}
-Para compilar el programa se debe abrir una terminal en la carpeta donde están alojados los archivos fuentes (\textsl{src/}) y se ejecuta el siguiente comando:
+
+Se creó un archivo \textsl{Makefile} que permite compilar tanto la versión en \textsl{MIPS}, como en la versión implementada completamente en \textsl{C}.
+
+El contenido de este archivo, puede verse a continuación:
+
+\lstinputlisting{../src/Makefile}
+
+Para compilarlo, se debe abrir una terminal en la carpeta donde están alojados los archivos fuentes (\textsl{src/}) y se ejecuta el siguiente comando:
+
 \begin{verbatim}
-../src$ gcc -g -O0 -Wall main.c algoritmo.S trozo.S relleno.S -o sha
+../src$ make mips
 \end{verbatim}
-Para generar el ejecutable \textsl{sha}.
+
+Para compilar la versión en \textsl{Assembly} de \textsl{MIPS}.
+
+O se puede utilizar esta opción:
+\begin{verbatim}
+../src$ make c
+\end{verbatim}
+
+Para generar la versión en \textsl{C}.
+
+Ambas opciones, generan el ejecutable \textsl{sha}.
 
 \section{Casos de Prueba}
 Algunos de los casos de pruebas realizados, pueden observarse a continuación:
