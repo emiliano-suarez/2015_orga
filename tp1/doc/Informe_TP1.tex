@@ -108,7 +108,7 @@ Con ninguna de estas opciones lograr que la función \textsl{sha} funcionara corr
   \item[trozo.S] \hfill \\
     Donde se encuentra la implementación en \textsl{Assembly} de la función \textsl{cargarTrozos}.
 
-    Dicha función, además de los registros obligatorios, contiene en su stack dos ``saved registers'' s0 y s1 que almacenan los punteros hacia los vectores ``trozos'' y ``bloques'' y los registros para almacenar las variables ``i'' y ``mascara''. En el cuerpo de la función se hace uso de los 8 registros temporales para distintas asignaciones necesarias.
+    Dicha función, contiene en su stacks bytes reservados para almacenar las variables ``i'' y ``mascara''. En el cuerpo de la función se hace uso de los 8 registros temporales para distintas asignaciones necesarias.
 
     Luego de guardar los parámetros con los que viene la función, inicializar ``i'' y cargar la ``mascara'' a un temporal, genera las 16 primeras palabras del vector de 80, trayendo byte a byte desde ``bloques'' y generando con operaciones lógicas (and, or) y movimientos (sll) el word final que se guarda en ``trozos''.
 
@@ -117,7 +117,7 @@ Con ninguna de estas opciones lograr que la función \textsl{sha} funcionara corr
   \item[algoritmo.S] \hfill \\
     Donde se encuentra la implementación en \textsl{Assembly} de la función \textsl{algoritmoSha1}.
 
-    Dicha función, además de los registros obligatorios, contiene en su stack seis ``saved registers'' s2..s7 que almacenan los punteros hacia los valores de ``a,,b,c,d,e,f'' y los registros para almacenar las variables ``i'',  ``k'' y ``temp''. En el cuerpo de la función se hace uso de los 8 registros temporales para distintas asignaciones necesarias.
+    Dicha función, además de los registros obligatorios, contiene en su stack siete ``saved registers'' s0..s6 que almacenan los punteros hacia los valores de ``a,,b,c,d,e,f'' y los registros para almacenar las variables ``i'',  ``k'' y ``temp''. En el cuerpo de la función se hace uso de los 8 registros temporales para distintas asignaciones necesarias.
 
     Luego de guardar los parámetros con los que viene la función e inicializar ``i'' , se generan 4 ramas distintas de condicionales con procesos distintos (dependiendo el valor de ``i'' en el for) donde a través de operaciones lógicas (and, not, xor, or) generan un valor que se almacena en ``f'' y se carga una constante ``k'' determinada para que luego se terminen de generar los valores que devuelve la función y se asignen a sus respectivas variables.\hfill \\
 
