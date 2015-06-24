@@ -1,0 +1,228 @@
+\documentclass[a4paper,10pt]{article}
+
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage[ansinew]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{listings}
+\usepackage[ampersand]{easylist}
+\usepackage{amssymb}
+\ListProperties(Hide=100, Hang=true, Progressive=3ex, Style*=-- ,
+Style2*=$\bullet$ ,Style3*=$\circ$ ,Style4*=\tiny$\blacksquare$ )
+\usepackage{url}
+\usepackage{color}
+\usepackage{framed}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{amsthm}
+\usepackage[T1]{fontenc}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+  language=C,                       % the language of the code
+  basicstyle=\footnotesize,         % the size of the fonts that are used for the code
+  numbers=left,                     % where to put the line-numbers
+  numberstyle=\tiny\color{gray},    % the style that is used for the line-numbers
+  stepnumber=1,                     % the step between two line-numbers. If it's 1, each line 
+                                    % will be numbered
+  numbersep=5pt,                    % how far the line-numbers are from the code
+  backgroundcolor=\color{white},    % choose the background color. You must add \usepackage{color}
+  showspaces=false,                 % show spaces adding particular underscores
+  showstringspaces=false,           % underline spaces within strings
+  showtabs=false,                   % show tabs within strings adding particular underscores
+  frame=single,                     % adds a frame around the code
+  rulecolor=\color{black},          % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+  tabsize=2,                        % sets default tabsize to 2 spaces
+  captionpos=b,                     % sets the caption-position to bottom
+  breaklines=true,                  % sets automatic line breaking
+  breakatwhitespace=false,          % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                    % also try caption instead of title
+  keywordstyle=\color{blue},        % keyword style
+  commentstyle=\color{dkgreen},     % comment style
+  stringstyle=\color{mauve},        % string literal style
+  escapeinside={\%*}{*)},           % if you want to add LaTeX within your code
+  morekeywords={*,...},             % if you want to add more keywords to the set
+  rulesepcolor=\color{blue}
+}
+
+\title{     \textbf{Trabajo Práctico 2: \\ Infraestructura básica}}
+
+\author{
+            Jimenez, Ruben, \textit{Padrón Nro. 92.402}                            \\
+            \texttt{ rbnm.jimenez@gmail.com }                                   \\[2.5ex]
+            Reyero, Felix, \textit{Padrón Nro. 92.979}                             \\
+            \texttt{ felixcarp@gmail.com }                                    \\[2.5ex]
+            Suárez, Emiliano, \textit{Padrón Nro. 78.372}                             \\
+            \texttt{ emilianosuarez@gmail.com }                                    \\[2.5ex]
+    Primera Entrega: \textit{30/04/2015}                                            \\[1.5ex]
+            \normalsize{1er. Cuatrimestre de 2015}                                  \\
+            \normalsize{66.20 Organización de Computadoras  $-$ Práctica Jueves}    \\
+            \normalsize{Facultad de Ingeniería, Universidad de Buenos Aires}        \\
+       }
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}   % quita el número en la primer página
+
+\newpage
+\begin{abstract}
+Se tuvo que modificar el conjunto de instrucciones de distintos diseños de datapath.
+\end{abstract}
+
+\section{Objetivo}
+El objetivo de este trabajo es familiarizarse con la arquitectura de una CPU MIPS, específicamente con el datapath y la implementación de instrucciones. Para ello, se deberá agregar instrucciones a diversas configuraciones de CPU provistas por el simulador \textsl{DrMIPS}.
+
+\section{Introducción}
+
+El programa \textsl{DrMIPS} nos permite evaluar distintos diseños de datapath para procesadores \textsl{MIPS32}, al darnos la posibilidad de organizarlo como queramos. Podemos poner sumadores, multiplexores, extensores de signo y conexiones arbitrariamente.
+
+También es posible modificar el conjunto de instrucciones. Además de la estructura lógica del DP, \textsl{DrMIPS} nos permite escribir programas simples y simular su ejecución en el DP, mostrando los valores que toman las diversas entradas y salidas de cada elemento.
+
+
+\newpage
+\section{Implementación}
+
+Se implementaron las siguientes funciones, sobre distintos datapaths:
+\\
+\begin{easylist}
+& Instrucción \textsl{j} en el DP \textsl{pipeline.cpu}
+& Instrucción \textsl{jr} (Jump Register) en el DP \textsl{unicycle.cpu}
+& Instrucción \textsl{jr} en el DP \textsl{pipeline.cpu}
+& Instrucción \textsl{jalr} (Jump and Link Register) en el DP \textsl{unicycle.cpu}
+& Instrucción \textsl{jalr} en el DP \textsl{pipeline.cpu}]\\
+\end{easylist}
+
+% Inclusión de una imagen
+\begin{figure}[!htp]
+\begin{center}
+\includegraphics[width=1.0\textwidth]{jr_unicycle}
+\end{center}
+\caption{jr en DP uniciclo} \label{fig001}
+\end{figure}
+
+Para poder ejecutar el jr (JumpRegister) en el CPU uniciclo, se agrego al MuxJump  una entrada más ``2'', a su vez el cable de control Jump también puede tomar 3 valores (0,1,2) para poder elegir la acción del jr a través del seteo en ``2''.
+Además se agregó un componente mas: ForkRegJ que deriva los 32 bits del registro que se está leyendo hacia la tercera entrada (generada) en el MuxJump para asi poder ser redirigida al PC en caso de ser jr.
+
+En el .set se agrego jreg como como instruccion y jr como pseudoinstruccion utilizando la anterior y seteandola de manera tal que cumpla con la especificacion de jr. En la seccion de control se activa el cable de Jump en el valor ``2''.
+
+% Inclusión de una imagen
+\begin{figure}[!htp]
+\begin{center}
+\includegraphics[width=1.0\textwidth]{jr_unicycle_1}
+\end{center}
+\caption{jr unicycle 1} \label{fig002}
+\end{figure}
+
+Utilizando el .CPU del jr como base, se agrego al MuxDst  una entrada más ``2'', a su vez el cable de control RegDst también puede tomar 3 valores (0,1,2) para poder elegir la acción del jalr a través del seteo en ``2'' y una constante de 31 para seleccionar el registro \$ra a escribir.
+
+Tambien se modificó el ForkBranch y el MuxMem para poder escribir a través del MuxMem los datos del registro que debía seguir antes del salto que vienen del ForkBranch.
+
+En el .set se agrego jalreg como como instruccion y jalr como pseudoinstruccion utilizando la anterior y seteandola de manera tal que cumpla con la especificacion de jr. En la sección de control se activa el cable de Jump, RegDst, MemToReg en el valor ``2'' y RegWrite en el valor ``1'' para permitir la escritura.
+
+Para demostrar el correcto funcionamiento del jarl se muestra un ejemplo sencillo:
+
+\begin{verbatim}
+0 - addi $s1,$zero,16
+4 - jalr $s1
+\end{verbatim}
+
+Antes de la linea 0.
+
+% Inclusión de una imagen
+\begin{figure}[!htp]
+\begin{center}
+\includegraphics[width=1.0\textwidth]{jr_unicycle_2}
+\end{center}
+\caption{jr unicycle 2} \label{fig003}
+\end{figure}
+
+Una vez efectuada la suma y por generar el salto y linkear \$ra a 8 (que sería la siguiente a 4):
+
+% Inclusión de una imagen
+\begin{figure}[!htp]
+\begin{center}
+\includegraphics[width=1.0\textwidth]{jr_unicycle_3}
+\end{center}
+\caption{jr unicycle 3} \label{fig004}
+\end{figure}
+
+Salto a 16, \$ra = 8. Correcto.
+
+% Inclusión de una imagen
+\begin{figure}[!htp]
+\begin{center}
+\includegraphics[width=1.0\textwidth]{jr_unicycle_4}
+\end{center}
+\caption{jr unicycle 4} \label{fig005}
+\end{figure}
+
+
+Para la elaboracion de las instrucciones en pipeline se tuvo que considerar unicamente los hazards de control.
+
+Debido que las instrucciones eran jump, jump register y jump and link register.
+
+Para la elaboracion de la instruccion jump se uso el modelo de referencia que se encuentra en unicycle.cpu.
+Y para el control de hazards se hace un flush en el registro IF/ID, para ello el mutiplexor (muxjump) que tiene las entradas:
+\\
+\begin{easylist}
+& 0: branch o PC+4
+& 1: jump
+& 2: jump register y jump and link\\
+\end{easylist}
+
+La instruccion j,jr y jalr se realiza en el bloque de decodificacion ID, donde el valor del nuevo PC va hacia el multiplexor de saltos (muxjump) y ésta es habilitada mediante el la señal de control jump.
+
+Como el salto se realiza en el bloque ID, se necesita descartar la siguiente instruccion Fetchada.
+
+Dado que la instrucción branch hace un flush en los registros IF/ID,ID/EX,EX/MEM.
+
+Para las instrucciones jump sólo es necesario hacer flush en el bloque IF, osea en el registro IF/ID. Para eso se necesito hacer un or entre la entrada de control jump que va hacia muxjump y la respectiva señal de flust de las instrucciones branch, dado que la entrada de control jump es de dos bit, entonces se usa un distribuidor de la señal de manera que:
+\\
+\begin{easylist}
+& dos bits para el multiplexor de saltos (muxjump)
+& bit numero 0 para la entrada 1 del or (orJump)
+& bit numero 1 para la entrada 2 del or (orJump)\\
+\end{easylist}
+
+Para que se cumpla la condicion de flush sobre el registro IF/ID alguno de los bits tiene que tener valor 1, osea que sea 01 jump o 10 para que la salida del orJump jr y jalr.
+
+Mientras que el branch o PC+4 que toma el valor 00, no produce el flush en el registro IF/ID
+
+Los archivos \textsl{.set} y \textsl{.cpu}, pueden verse en dentro de la carpeta \textsl{dp/} del CD.
+
+\section{Conclusiones}
+
+Es importante destacar que es indispensable el dibujo previo del camino de datos anterior para el planeamiento cuando se va a modificar el datapath para poder entender el funcionamiento y generar el cambio necesario.
+
+El simulador \textsl{DrMips} nos ayudó a entender mejor temas como la composición y el funcionamiento de un camino de datos, segmentación, codificación de la instrucción y el proceso de cada una de ellas.
+
+\newpage
+\section{Bibliografía}
+
+\begin{thebibliography}{99}
+\bibitem{MIPS_LIGHT} \emph{MIPS-Light Instruction Set Summary}\\
+\url{http://web.stanford.edu/class/ee282h/projects/info/isa.html}
+
+\bibitem{JUMPS} \emph{Conditional and Unconditional Jumps}\\
+\url{http://www.cs.umd.edu/class/sum2003/cmsc311/Notes/Mips/jump.html}
+
+\bibitem{MIPS_INSTRUCTIONS} \emph{MIPS Instructions}\\
+\url{http://web.cse.ohio-state.edu/~crawfis/cse675-02/Slides/MIPS%20Instruction%20Set.pdf}
+
+\bibitem{MIPS_ARCH} \emph{MIPS\_Arch2.ppt}\\
+\url{http://faculty.washington.edu/lcrum/Archives/TCSS372AF08/MIPS_Arch2.ppt}
+
+\bibitem{TOOLS} \emph{Tool to Support Computer Architecture Teaching and Learning}\\
+\url{https://bytebucket.org/brunonova/drmips/wiki/papers/cispee13_24.pdf}
+
+\end{thebibliography}
+
+\end{document}
