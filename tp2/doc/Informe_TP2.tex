@@ -105,7 +105,6 @@ Se implementaron las siguientes funciones, sobre distintos datapaths:
 \begin{center}
 \includegraphics[width=1.0\textwidth]{jr_unicycle}
 \end{center}
-\caption{jr en DP uniciclo} \label{fig001}
 \end{figure}
 
 Para poder ejecutar el jr (JumpRegister) en el CPU uniciclo, se agrego al MuxJump  una entrada más ``2'', a su vez el cable de control Jump también puede tomar 3 valores (0,1,2) para poder elegir la acción del jr a través del seteo en ``2''.
@@ -113,19 +112,11 @@ Además se agregó un componente mas: ForkRegJ que deriva los 32 bits del registro
 
 En el .set se agrego jreg como como instruccion y jr como pseudoinstruccion utilizando la anterior y seteandola de manera tal que cumpla con la especificacion de jr. En la seccion de control se activa el cable de Jump en el valor ``2''.
 
-% Inclusión de una imagen
-\begin{figure}[!htp]
-\begin{center}
-\includegraphics[width=1.0\textwidth]{jr_unicycle_1}
-\end{center}
-\caption{jr unicycle 1} \label{fig002}
-\end{figure}
-
 Utilizando el .CPU del jr como base, se agrego al MuxDst  una entrada más ``2'', a su vez el cable de control RegDst también puede tomar 3 valores (0,1,2) para poder elegir la acción del jalr a través del seteo en ``2'' y una constante de 31 para seleccionar el registro \$ra a escribir.
 
 Tambien se modificó el ForkBranch y el MuxMem para poder escribir a través del MuxMem los datos del registro que debía seguir antes del salto que vienen del ForkBranch.
 
-En el .set se agrego jalreg como como instruccion y jalr como pseudoinstruccion utilizando la anterior y seteandola de manera tal que cumpla con la especificacion de jr. En la sección de control se activa el cable de Jump, RegDst, MemToReg en el valor ``2'' y RegWrite en el valor ``1'' para permitir la escritura.
+En el .set se agrego jalreg como como instrucción y jalr como pseudoinstruccion utilizando la anterior y seteandola de manera tal que cumpla con la especificacion de jr. En la sección de control se activa el cable de Jump, RegDst, MemToReg en el valor ``2'' y RegWrite en el valor ``1'' para permitir la escritura.
 
 Para demostrar el correcto funcionamiento del jarl se muestra un ejemplo sencillo:
 
@@ -141,7 +132,6 @@ Antes de la linea 0.
 \begin{center}
 \includegraphics[width=1.0\textwidth]{jr_unicycle_2}
 \end{center}
-\caption{jr unicycle 2} \label{fig003}
 \end{figure}
 
 Una vez efectuada la suma y por generar el salto y linkear \$ra a 8 (que sería la siguiente a 4):
@@ -151,19 +141,24 @@ Una vez efectuada la suma y por generar el salto y linkear \$ra a 8 (que sería l
 \begin{center}
 \includegraphics[width=1.0\textwidth]{jr_unicycle_3}
 \end{center}
-\caption{jr unicycle 3} \label{fig004}
 \end{figure}
 
 Salto a 16, \$ra = 8. Correcto.
 
+\newpage
 % Inclusión de una imagen
 \begin{figure}[!htp]
 \begin{center}
 \includegraphics[width=1.0\textwidth]{jr_unicycle_4}
 \end{center}
-\caption{jr unicycle 4} \label{fig005}
 \end{figure}
 
+% Inclusión de una imagen
+\begin{figure}[!htp]
+\begin{center}
+\includegraphics[width=1.0\textwidth]{jr_unicycle_1}
+\end{center}
+\end{figure}
 
 Para la elaboracion de las instrucciones en pipeline se tuvo que considerar unicamente los hazards de control.
 
